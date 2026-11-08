@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BÀI 11: HAI ĐƯỜNG THẲNG SONG SONG (ĐẦY ĐỦ TỪNG HÌNH 3D SGK)</title>
+    
+    <script>
+        window.MathJax = { 
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], processEscapes: true },
+            svg: { fontCache: 'global' },
+            startup: { typeset: true }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+ 
+    <style>
+        :root {
+            --primary: #0056b3; --secondary: #eef2f5; --text: #333;
+            --correct: #d4edda; --correct-border: #c3e6cb;
+            --incorrect: #f8d7da; --incorrect-border: #f5c6cb;
+            --graph-blue: #0056b3; --graph-red: #dc3545; --font-size: 14pt;
+            --illu-size: 300px; 
+        }
+        * { box-sizing: border-box; } 
+        body { font-family: 'Segoe UI', sans-serif; font-size: var(--font-size); line-height: 1.6; color: var(--text); max-width: 1020px; margin: 0 auto; padding: 10px 20px; background-color: #f4f7f6; transition: max-width 0.3s ease, font-size 0.2s ease; overflow-x: hidden; }
+        h1, h2, h3, h4 { color: var(--primary); margin-top: 0; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%;}
+        .theory-box { border-left: 5px solid var(--primary); }
+        .theory-section { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px dashed #ccc; padding-bottom: 24px;}
+        .theory-section:last-child { border-bottom: none; }
+        .theory-content { flex: 1 1 52%; min-width: 280px; padding-right: 18px; }
+        .theory-illu { flex: 0 0 var(--illu-size); width: var(--illu-size); text-align: center; background: #fafbfc; border-radius: 10px; padding: 10px; border: 1px solid #d0d7de; transition: all 0.3s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 68px; }
+        .theory-illu canvas { width: 100%; height: auto; aspect-ratio: 1 / 1; cursor: grab; border-radius: 6px; background: #ffffff; border: 1px solid #eee; touch-action: none; }
+        .theory-illu canvas:active { cursor: grabbing; }
+        .theory-illu span { display: block; font-size: 0.8em; color: #333; font-style: italic; margin-top: 6px; font-weight: 500; }
+        .mini-3d-bar { display: flex; justify-content: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+        .mini-btn { background: #e9ecef; color: #333; border: 1px solid #ced4da; padding: 4px 7px; font-size: 0.72em; border-radius: 4px; cursor: pointer; font-weight: 600; transition: 0.15s; }
+        .mini-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: none; }
+        .mini-btn.active { background: #28a745; color: white; border-color: #28a745; }
+        .mini-btn.fig-select { background: #eef5ff; color: #0056b3; border-color: #9ec5fe; }
+        .mini-btn.fig-select.selected { background: #0056b3; color: #fff; border-color: #004085; }
+
+        /* KHUNG MÔ PHỎNG 3D TƯƠNG TÁC TRUNG TÂM */
+        .sim3d-wrapper { background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%); border: 2px solid var(--primary); border-radius: 10px; padding: 15px; margin: 15px 0 25px 0; }
+        .sim3d-grid { display: flex; flex-wrap: wrap; gap: 15px; align-items: stretch; }
+        .sim3d-stage { flex: 1 1 420px; background: #fff; border-radius: 8px; border: 1px solid #ccd6e0; padding: 10px; text-align: center; position: relative; }
+        .sim3d-stage canvas { width: 100%; max-width: 500px; height: auto; aspect-ratio: 4 / 3; cursor: grab; touch-action: none; }
+        .sim3d-stage canvas:active { cursor: grabbing; }
+        .sim3d-controls { flex: 1 1 280px; background: #fff; border-radius: 8px; border: 1px solid #ccd6e0; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; font-size: 0.88em; }
+        .mode-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+        .mode-btn { padding: 6px 8px; font-size: 0.8em; background: #eef2f5; color: #222; border: 1px solid #ced4da; border-radius: 5px; cursor: pointer; text-align: left; font-weight: bold; transition: 0.2s; }
+        .mode-btn:hover { background: #dce4ec; transform: none; }
+        .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .view-btn-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+        .view-btn { flex: 1 1 45%; padding: 5px 8px; font-size: 0.82em; background: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .view-btn:hover { background: #003d82; }
+        .view-btn.toggle-rot { background: #6c757d; flex: 1 1 100%; font-size: 0.9em; }
+        .view-btn.toggle-rot.running { background: #28a745; }
+        .legend-bar { display: flex; justify-content: center; gap: 15px; font-size: 0.82em; color: #444; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e0e0e0; flex-wrap: wrap; }
+
+        .control-panel { background: var(--secondary); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 9999; box-shadow: 0 6px 10px rgba(0,0,0,0.15); border: 2px solid var(--primary); padding: 8px 10px !important; font-size: 0.85em; }
+        .control-panel label { font-weight: bold; white-space: nowrap; }
+        .control-panel input { width: 45px; padding: 3px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: inherit;}
+        .control-panel button { padding: 5px 10px; font-size: inherit; } 
+        button { background-color: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; font-size: inherit; }
+        button:hover { background-color: #004494; transform: translateY(-1px); }
+        button.submit-btn { background-color: #28a745; font-size: 1.1em; padding: 12px 25px; margin-top: 15px; width: 100%;}
+        button.submit-btn:hover { background-color: #218838; }
+        .font-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; margin-right: 5px; border-right: 2px solid #ccc; padding-right: 10px; }
+        button.font-btn { background-color: #6c757d; padding: 4px 8px; }
+        button.font-btn:hover { background-color: #5a6268; }
+        .scroll-area { padding: 5px; }
+        .table-responsive { width: 100%; overflow-x: auto; margin: 10px 0; display: block; -webkit-overflow-scrolling: touch; }
+        .question { margin-top: 15px; padding: 15px; border: 1px solid #e2e2e2; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .options { list-style-type: none; padding-left: 0; margin-top: 10px; }
+        .options li { padding: 8px; margin-bottom: 5px; border-radius: 4px; border: 1px solid transparent; transition: 0.2s;}
+        .options label { cursor: pointer; display: flex; align-items: center; gap: 10px; width: 100%;}
+        input[type="radio"] { width: 1.5em; height: 1.5em; cursor: pointer; accent-color: var(--primary); flex-shrink: 0; }
+        .tf-table { width: 100%; border-collapse: collapse; min-width: 500px; text-align: center; }
+        .tf-table th, .tf-table td { border: 1px solid #ddd; padding: 10px; vertical-align: middle; }
+        .tf-table td:first-child { text-align: left; }
+        .short-ans-input { padding: 6px; width: 120px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; font-size: inherit;}
+        .is-correct { background-color: var(--correct) !important; border-color: var(--correct-border) !important; }
+        .is-incorrect { background-color: var(--incorrect) !important; border-color: #f5c6cb !important; }
+        .feedback { font-weight: bold; margin-left: 10px; font-size: 0.9em; }
+        .feedback.text-correct { color: #155724; }
+        .feedback.text-incorrect { color: #721c24; }
+        .advice-box { margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1em; display: none; }
+        .tip-box { padding: 12px 15px; margin: 12px 0; border-radius: 6px; border-left: 5px solid; font-size: 0.95em; }
+        .tip-yellow { background: #fff3cd; border-color: #ffc107; color: #856404; }
+        .tip-green { background: #d4edda; border-color: #28a745; color: #155724; }
+        .tip-blue { background: #e7f3fe; border-color: #0056b3; color: #004085; }
+        .tip-red { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .tip-title { font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block;}
+        ul.theory-list { margin: 5px 0 10px 20px; padding: 0; }
+        ul.theory-list li { margin-bottom: 6px; }
+        @media (max-width: 900px) {
+            .control-panel { flex-direction: row; gap: 6px; padding: 6px !important; }
+            .font-controls { border-right: none; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 2px; width: 100%; justify-content: center; margin-right: 0;}
+            .box { padding: 10px; }
+            body { padding: 2px; }
+            .theory-illu { flex: 1 1 100%; max-width: var(--illu-size); margin: 15px auto 0 auto; position: static; }
+            .theory-content { padding-right: 0; min-width: 100%; }
+            .tf-table { min-width: 100%; font-size: 0.9em; } 
+            .question { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 10px; } 
+        }
+    </style>
+</head>
+<body>
+ 
+    <div class="box control-panel">
+        <div class="font-controls">
+            <button class="font-btn" onclick="toggleFullScreen()" title="Bật/Tắt chế độ Toàn Màn Hình (F11)">📺 Toàn màn hình</button>
+            <button class="font-btn" onclick="toggleWidth()" title="Phóng to/Thu nhỏ khung viền trang web">↔️ Đổi khung</button>
+            <span style="margin: 0 5px; color: #ccc;">|</span>
+            <label>Cỡ chữ:</label>
+            <button class="font-btn" onclick="changeFontSize(-2)">A-</button>
+            <span id="font-size-display" style="font-weight: bold; width: 40px; text-align: center;">14pt</span>
+            <button class="font-btn" onclick="changeFontSize(2)">A+</button>
+            <span style="margin: 0 5px; color: #ccc;">|</span>
+            <label>Cỡ hình:</label>
+            <button class="font-btn" onclick="changeIlluSize(-30)">-</button>
+            <span id="illu-size-display" style="font-weight: bold; width: 48px; text-align: center;">300px</span>
+            <button class="font-btn" onclick="changeIlluSize(30)">+</button>
+        </div>
+        <label>Dạng 1 (4 PA): <input type="number" id="numType1" value="5" min="0" max="15"></label>
+        <label>Dạng 2 (Đ/S): <input type="number" id="numType2" value="3" min="0" max="15"></label>
+        <label>Dạng 3 (Ngắn): <input type="number" id="numType3" value="3" min="0" max="15"></label>
+        <button onclick="generateTest()">TẠO ĐỀ NGẪU NHIÊN SIÊU ĐA DẠNG</button>
+    </div>
+ 
+    <div class="box theory-box">
+        <div style="font-size: 0.9em; font-weight: bold; color: #555; text-transform: uppercase;">CHƯƠNG IV: QUAN HỆ SONG SONG TRONG KHÔNG GIAN</div>
+        <h1 style="margin-bottom: 5px;">BÀI 11: HAI ĐƯỜNG THẲNG SONG SONG</h1>
+        <div style="text-align: right; font-style: italic; color: var(--primary); font-weight: bold; border-bottom: 1px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;">
+            TỔ TOÁN - HĐTN TRƯỜNG THPT TRUNG LẬP | Giáo viên: NGUYỄN VĂN SÔ
+        </div>
+
+        <!-- ================= PHÒNG THÍ NGHIỆM 3D TRUNG TÂM: BẢNG ĐIỀU KHIỂN NHANH TẤT CẢ 16 HÌNH VẼ SGK ================= -->
+        <div class="sim3d-wrapper">
+            <h3 style="margin-bottom: 6px; text-align: center; color: #004085;">🌐 BẢNG ĐIỀU KHIỂN 3D TỔNG HỢP TẤT CẢ HÌNH VẼ BÀI 11 SGK (HÌNH 4.14 ĐẾN HÌNH 4.33)</h3>
+            <p style="text-align: center; font-size: 0.86em; color: #555; margin-top: 0; margin-bottom: 10px;">
+                <i>💡 Mỗi mục bên dưới đều đã có khung hình 3D riêng. Ngoài ra, thầy/cô và học sinh có thể bấm chọn trực tiếp bất kỳ hình nào trong SGK tại bảng trung tâm này để phóng to và xoay $360^\circ$!</i>
+            </p>
+            <div class="sim3d-grid">
+                <div class="sim3d-stage">
+                    <canvas id="main3DCanvas" width="520" height="390"></canvas>
+                    <div id="main3DCaption" style="font-weight: bold; color: var(--primary); font-size: 0.92em; margin-top: 4px;">
+                        Hình 4.14 & 4.15 SGK: 4 vị trí tương đối của hai đường thẳng $a, b$ (Cắt nhau, Song song, Trùng nhau, Chéo nhau)
+                    </div>
+                    <div class="legend-bar">
+                        <span>━━━ <b>Nét liền:</b> Cạnh / Đường nhìn thấy</span>
+                        <span>╌╌╌ <b>Nét đứt:</b> Cạnh bị che khuất / Đường xuyên mặt phẳng</span>
+                    </div>
+                </div>
+                <div class="sim3d-controls">
+                    <div>
+                        <div style="font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px;">
+                            🧊 Chọn từng hình vẽ trong SGK (H.4.14 – H.4.33):
+                        </div>
+                        <div class="mode-btn-group">
+                            <button class="mode-btn active" id="modeBtn0" onclick="setMainMode(0)">H.4.14 & 4.15: 4 vị trí $a, b$</button>
+                            <button class="mode-btn" id="modeBtn1" onclick="setMainMode(1)">H.4.16: 2 HBH $ABCD, ABEF$</button>
+                            <button class="mode-btn" id="modeBtn2" onclick="setMainMode(2)">H.4.17: Chóp $S.ABCD$ & $MN$</button>
+                            <button class="mode-btn" id="modeBtn3" onclick="setMainMode(3)">H.4.18: Tứ diện $ABCD$</button>
+                            <button class="mode-btn" id="modeBtn4" onclick="setMainMode(4)">H.4.19 & 4.20: Chóp & Gậy</button>
+                            <button class="mode-btn" id="modeBtn5" onclick="setMainMode(5)">H.4.21: Điểm $M$ & $d \subset (P)$</button>
+                            <button class="mode-btn" id="modeBtn6" onclick="setMainMode(6)">H.4.22: Tứ diện & $MPNQ$</button>
+                            <button class="mode-btn" id="modeBtn7" onclick="setMainMode(7)">H.4.23 & 4.24: 3 giao tuyến</button>
+                            <button class="mode-btn" id="modeBtn8" onclick="setMainMode(8)">H.4.25 & 4.26: Giao tuyến & Bể</button>
+                            <button class="mode-btn" id="modeBtn9" onclick="setMainMode(9)">H.4.27 & 4.28: Bài 4.11 & 4.13</button>
+                            <button class="mode-btn" id="modeBtn10" onclick="setMainMode(10)">H.4.29 & 4.30: Bài 4.14 & Cửa</button>
+                            <button class="mode-btn" id="modeBtn11" onclick="setMainMode(11)">H.4.31–4.33: Mặt Hypebol 3D</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-weight: bold; color: var(--primary); font-size: 0.88em;">🔄 Điều khiển góc nhìn 3D:</div>
+                        <div class="view-btn-group">
+                            <button class="view-btn toggle-rot" id="btnMainAutoRot" onclick="toggleMainAutoRotate()">▶️ Bật tự động xoay 360°</button>
+                            <button class="view-btn" onclick="resetMainStandardView()">📐 Góc chuẩn SGK</button>
+                            <button class="view-btn" onclick="setMainView(0.55, 0.35)">↗️ Xoay góc phải</button>
+                            <button class="view-btn" onclick="setMainView(-2.15, 0.35)">↙️ Xoay mặt sau</button>
+                            <button class="view-btn" onclick="setMainView(-0.45, 1.25)">⬇️ Nhìn từ đỉnh xuống</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- ================= PHẦN 1.1: HÌNH 4.13, 4.14 & 4.15 (4 VỊ TRÍ TƯƠNG ĐỐI) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>1. Vị Trí Tương Đối Của Hai Đường Thẳng</h3>
+                <p><b>a) HĐ1: Mô hình 4 tuyến đường giao thông (Hình 4.13 SGK trang 78):</b></p>
+                <ul class="theory-list">
+                    <li><b>Hai tuyến đường giao nhau (cắt nhau):</b> Tuyến đường bộ $(1)$ và tuyến đường bộ $(2)$.</li>
+                    <li><b>Hai tuyến đường song song:</b> Tuyến đường bộ $(2)$ và tuyến đường vành đai trên cao $(3)$.</li>
+                    <li><b>Hai tuyến đường không giao nhau (chéo nhau):</b> $(1)$ và $(3)$; $(1)$ và $(4)$; $(2)$ và $(4)$; $(3)$ và $(4)$.</li>
+                </ul>
+
+                <p><b>b) Định nghĩa hai đường thẳng đồng phẳng và chéo nhau (Hình 4.14 & 4.15 SGK trang 78):</b></p>
+                <ul class="theory-list">
+                    <li>Cho hai đường thẳng $a$ và $b$ trong không gian:
+                        <br>• Nếu $a$ và $b$ <b>cùng nằm trong một mặt phẳng $(\alpha)$</b> thì ta nói $a$ và $b$ <b>đồng phẳng</b>. Khi đó $a$ và $b$ có thể:
+                        <br>&nbsp;&nbsp;1. <b>Cắt nhau</b> tại $M$: $a \cap b = \{M\}$ (Hình 4.14a).
+                        <br>&nbsp;&nbsp;2. <b>Song song</b> với nhau: $a \parallel b$ (Hình 4.14b).
+                        <br>&nbsp;&nbsp;3. <b>Trùng nhau</b>: $a = b$ (Hình 4.14c).
+                        <br>• Nếu $a$ và $b$ <b>không cùng nằm trong bất kì mặt phẳng nào</b> thì ta nói $a$ và $b$ <b>chéo nhau</b> (Hình 4.15: đường thẳng $b \subset (\alpha)$, còn đường thẳng $a$ cắt $(\alpha)$ tại điểm không thuộc $b$).</li>
+                </ul>
+                <div class="tip-box tip-yellow">
+                    <span class="tip-title">📌 Nhận xét (Trang 79 SGK):</span>
+                    • Hai đường thẳng song song là hai đường thẳng <b>đồng phẳng</b> và <b>không có điểm chung</b>. Có đúng một mặt phẳng chứa hai đường thẳng song song.<br>
+                    • Hai đường thẳng không có điểm chung thì có thể <b>song song</b> hoặc <b>chéo nhau</b>.
+                </div>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec0" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub0_0" onclick="setMiniSub(0, 0)">H.4.14 & 4.15</button>
+                    <button class="mini-btn fig-select" id="sub0_1" onclick="setMiniSub(0, 1)">Chỉ H.4.15 (Chéo)</button>
+                    <button class="mini-btn" id="btnRot0" onclick="toggleMiniRot(0, 'btnRot0')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(0)">📐 Chuẩn</button>
+                </div>
+                <span>Hình 4.14 & 4.15 SGK: Mặt phẳng $(\alpha)$ chứa $a, b$ (cắt nhau, song song, trùng nhau) và $a, b$ chéo nhau</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 1.2: VÍ DỤ 1 (HÌNH 4.16) & LUYỆN TẬP 1 (HÌNH 4.17) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>1.2. Ví Dụ 1 (Hình 4.16) & Luyện Tập 1 (Hình 4.17) – Trang 79 SGK</h3>
+                <p><b>• Ví dụ 1 (Hình 4.16):</b> Cho hai hình bình hành $ABCD$ và $ABEF$ không cùng nằm trong một mặt phẳng.</p>
+                <ul class="theory-list">
+                    <li><b>a) Quan sát bốn đường thẳng $AB, BC, CD, DA$:</b>
+                        <br>+ Các cặp đường thẳng <b>cắt nhau</b>: $AB$ và $BC$, $AB$ và $DA$, $BC$ và $CD$, $CD$ và $DA$.
+                        <br>+ Các cặp đường thẳng <b>song song</b>: $AB$ và $CD$, $DA$ và $BC$.</li>
+                    <li><b>b) Trong ba đường thẳng $AB, AF, BE$:</b> Cùng nằm trong mặt phẳng $(ABEF)$ nên <b>không có hai đường thẳng nào chéo nhau</b> (trong đó $AF \parallel BE$, còn $AB$ cắt $AF$ và $BE$).</li>
+                </ul>
+
+                <p><b>• Luyện tập 1 (Hình 4.17):</b> Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành.</p>
+                <ul class="theory-list">
+                    <li><b>a) Trong các đường thẳng $AB, AC, CD$:</b> Hai đường thẳng <b>song song</b> là $AB$ và $CD$; các cặp đường thẳng <b>cắt nhau</b> là $AC$ và $AB$ (tại $A$), $AC$ và $CD$ (tại $C$).</li>
+                    <li><b>b) Gọi $M, N$ lần lượt thuộc hai cạnh $SA, SB$:</b> Vì ba đường thẳng $SA, MN, AB$ cùng nằm trong mặt phẳng $(SAB)$ nên <b>không có hai đường thẳng nào chéo nhau</b>.</li>
+                </ul>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec1" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub1_0" onclick="setMiniSub(1, 0)">Hình 4.16</button>
+                    <button class="mini-btn fig-select" id="sub1_1" onclick="setMiniSub(1, 1)">Hình 4.17</button>
+                    <button class="mini-btn" id="btnRot1" onclick="toggleMiniRot(1, 'btnRot1')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(1)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec1">Hình 4.16 SGK: Hai hình bình hành $ABCD$ và $ABEF$ không cùng nằm trong một mặt phẳng</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 1.3: VÍ DỤ 2 (HÌNH 4.18), LUYỆN TẬP 2 (HÌNH 4.19) & VẬN DỤNG 1 (HÌNH 4.20) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>1.3. Ví Dụ 2 (Hình 4.18), Luyện Tập 2 (Hình 4.19) & Vận Dụng 1 (Hình 4.20) – Trang 80 SGK</h3>
+                <p><b>• Ví dụ 2 (Hình 4.18 - Tứ diện $ABCD$):</b></p>
+                <ul class="theory-list">
+                    <li>Nếu $AB$ và $CD$ không chéo nhau thì chúng cùng thuộc một mặt phẳng $\Rightarrow$ bốn điểm $A, B, C, D$ đồng phẳng, trái với giả thiết $ABCD$ là hình tứ diện. Do đó <b>$AB$ và $CD$ chéo nhau</b>.</li>
+                    <li>Tương tự, trong tứ diện $ABCD$ còn có các cặp cạnh đối diện chéo nhau là: <b>$AC$ và $BD$</b>, <b>$AD$ và $BC$</b>.</li>
+                </ul>
+
+                <p><b>• Luyện tập 2 (Hình 4.19 - Hình chóp tứ giác $S.ABCD$):</b></p>
+                <ul class="theory-list">
+                    <li><b>a) Các đường thẳng cạnh chéo với $SA$:</b> $BC$ và $CD$ (và đường chéo đáy $BD$).</li>
+                    <li><b>b) Các đường thẳng cạnh chéo với $BC$:</b> $SA$ và $SD$ (và $CD, AB$ nếu xét đường bên không đồng phẳng).</li>
+                </ul>
+
+                <p><b>• Vận dụng 1 (Hình 4.20 - Chiếc gậy dựa tường):</b></p>
+                <ul class="theory-list">
+                    <li>Một chiếc gậy có đầu $A$ dựa vào tường và đầu $B$ đặt trên mặt sàn ($A, B$ không thuộc mép chân tường $c$):
+                        <br>+ Chiếc gậy $AB$ và mép chân tường $c$ (giao tuyến của tường và sàn) <b>chéo nhau</b> nên không thể song song với mép chân tường đó.
+                        <br>+ Tuy nhiên, nếu xét <b>mép tường thẳng đứng</b> (giao tuyến của bức tường đó với bức tường bên cạnh), ta <b>không thể</b> đặt gậy song song với mép đứng vì một đầu gậy nằm ngoài tường. Chỉ khi đặt gậy nằm trong mặt phẳng song song với bức tường bên kia thì gậy mới song song với giao tuyến phụ trên tường đó.</li>
+                </ul>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec2" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub2_0" onclick="setMiniSub(2, 0)">Hình 4.18</button>
+                    <button class="mini-btn fig-select" id="sub2_1" onclick="setMiniSub(2, 1)">Hình 4.19</button>
+                    <button class="mini-btn fig-select" id="sub2_2" onclick="setMiniSub(2, 2)">Hình 4.20</button>
+                    <button class="mini-btn" id="btnRot2" onclick="toggleMiniRot(2, 'btnRot2')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(2)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec2">Hình 4.18 SGK: Hình tứ diện $ABCD$ với 3 cặp cạnh đối diện chéo nhau ($AB$ và $CD$, $AC$ và $BD$, $AD$ và $BC$)</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 2.1: TÍNH CHẤT HAI ĐƯỜNG THẲNG SONG SONG (H.4.21 & H.4.22) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>2. Tính Chất Của Hai Đường Thẳng Song Song (Hình 4.21 & 4.22 – Trang 80, 81 SGK)</h3>
+                <p><b>a) HĐ2 (Hình 4.21) & Tính chất 1:</b></p>
+                <ul class="theory-list">
+                    <li>Cho đường thẳng $d$ và điểm $M \notin d$, gọi $(P)$ là mặt phẳng chứa $M$ và $d$ (Hình 4.21). Trên $(P)$ có duy nhất một đường thẳng $d'$ đi qua $M$ và song song với $d$; mọi đường thẳng qua $M$ song song với $d$ đều phải nằm trong $(P)$.</li>
+                    <li><b>Định lí 1:</b> <i>Trong không gian, qua một điểm không nằm trên đường thẳng cho trước, có <b>đúng một</b> đường thẳng song song với đường thẳng đã cho.</i></li>
+                </ul>
+
+                <p><b>b) HĐ3 & Tính chất 2 (Bắc cầu):</b></p>
+                <ul class="theory-list">
+                    <li><b>Định lí 2:</b> <i>Trong không gian, hai đường thẳng phân biệt cùng song song với đường thẳng thứ ba thì <b>song song với nhau</b>.</i> ($a \parallel c$ và $b \parallel c \Rightarrow a \parallel b$).</li>
+                </ul>
+
+                <div class="tip-box tip-blue">
+                    <span class="tip-title">🔍 Ví dụ 3 (Hình 4.22) & Luyện tập 3 (Trang 81 SGK):</span>
+                    • <b>Ví dụ 3 (Hình 4.22):</b> Cho tứ diện $ABCD$ có $M, N, P, Q, R, S$ lần lượt là trung điểm của $AB, CD, AD, BC, AC, BD$.
+                    <br>&nbsp;&nbsp;+ a) Trong $\triangle ABC$: $MQ \parallel AC, MQ = \frac{1}{2}AC$. Trong $\triangle ACD$: $PN \parallel AC, PN = \frac{1}{2}AC \Rightarrow MQ \parallel PN$ và $MQ = PN \Rightarrow$ tứ giác <b>$MPNQ$ là hình bình hành</b>.
+                    <br>&nbsp;&nbsp;+ b) Hai đường chéo $MN$ và $PQ$ của hình bình hành $MPNQ$ cắt nhau tại trung điểm mỗi đường. Tương tự $MRNS$ là hình bình hành nên $MN$ và $RS$ cắt nhau tại trung điểm mỗi đường $\Rightarrow$ <b>$MN, PQ, RS$ đồng quy tại trung điểm $G$ của mỗi đoạn</b>.<br>
+                    • <b>Luyện tập 3:</b> Trong Hình 4.16, ta có $CD \parallel AB$ và $EF \parallel AB \Rightarrow CD \parallel EF \Rightarrow C, D, E, F$ đồng phẳng. Vì $CD = AB = EF$ nên <b>$CDFE$ là hình bình hành</b>.
+                </div>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec3" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select" id="sub3_0" onclick="setMiniSub(3, 0)">Hình 4.21</button>
+                    <button class="mini-btn fig-select selected" id="sub3_1" onclick="setMiniSub(3, 1)">Hình 4.22</button>
+                    <button class="mini-btn" id="btnRot3" onclick="toggleMiniRot(3, 'btnRot3')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(3)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec3">Hình 4.22 SGK (Ví dụ 3): Tứ diện $ABCD$ với 6 trung điểm $M, N, P, Q, R, S$ và hình bình hành $MPNQ$</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 2.2: ĐỊNH LÍ 3 ĐƯỜNG GIAO TUYẾN (H.4.23, H.4.24, H.4.25, H.4.26) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>2.2. Định Lí Về Ba Đường Giao Tuyến & Hệ Quả (Hình 4.23, 4.24, 4.25, 4.26 – Trang 81, 82 SGK)</h3>
+                <p><b>a) HĐ4 (Hình 4.23 & 4.24) & Định lí về ba đường giao tuyến:</b></p>
+                <ul class="theory-list">
+                    <li>Cho hai mặt phẳng $(P), (Q)$ cắt nhau theo giao tuyến $c$. Mặt phẳng $(R)$ cắt $(P), (Q)$ theo hai giao tuyến $a, b$ khác $c$:
+                        <br>• <b>Hình 4.23:</b> Nếu $a$ cắt $c$ tại $M$ thì $M \in a \subset (R)$ và $M \in c \subset (Q) \Rightarrow M \in (Q) \cap (R) = b$ (ba giao tuyến <b>$a, b, c$ đồng quy tại $M$</b>).
+                        <br>• <b>Hình 4.24:</b> Nếu $a \parallel c$ thì $b \parallel c$ (ba giao tuyến <b>$a, b, c$ đôi một song song</b>).</li>
+                    <li><b>Định lí:</b> <i>Nếu ba mặt phẳng đôi một cắt nhau theo ba giao tuyến phân biệt thì ba giao tuyến đó <b>đồng quy</b> hoặc <b>đôi một song song</b> với nhau.</i></li>
+                    <li><b>Chú ý (Hệ quả):</b> <i>Nếu hai mặt phẳng chứa hai đường thẳng song song với nhau thì giao tuyến của chúng (nếu có) <b>song song với hai đường thẳng đó</b> hoặc trùng với một trong hai đường thẳng đó.</i></li>
+                </ul>
+
+                <div class="tip-box tip-green">
+                    <span class="tip-title">💡 Ví dụ 4, Luyện tập 4 (Hình 4.25) & Vận dụng 2 (Hình 4.26 – Trang 82 SGK):</span>
+                    • <b>Ví dụ 4 (Hình 4.25):</b> Hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành. Hai mặt phẳng $(SAB)$ và $(SCD)$ có điểm chung $S$ và chứa $AB \parallel CD \Rightarrow$ giao tuyến là đường thẳng <b>$m$ đi qua $S$ và song song với $AB, CD$</b>.<br>
+                    • <b>Luyện tập 4 (Hình 4.25):</b> Hai mặt phẳng $(SAD)$ và $(SBC)$ có điểm chung $S$ và chứa $AD \parallel BC \Rightarrow$ giao tuyến là đường thẳng <b>$n$ đi qua $S$ và song song với $AD, BC$</b>.<br>
+                    • <b>Vận dụng 2 (Hình 4.26 - Bể nước đặt nghiêng):</b> Hai mặt bên đối diện của bể chứa hai cạnh đáy song song nên mặt phẳng mặt nước cắt mặt bên theo mép nước $AB$ song song với giao tuyến đối diện, theo định lí 3 đường giao tuyến suy ra <b>mép nước $AB$ luôn song song với cạnh đáy $CD$</b>.
+                </div>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec4" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select" id="sub4_0" onclick="setMiniSub(4, 0)">H.4.23 (Đồng quy)</button>
+                    <button class="mini-btn fig-select" id="sub4_1" onclick="setMiniSub(4, 1)">H.4.24 (Song song)</button>
+                    <button class="mini-btn fig-select selected" id="sub4_2" onclick="setMiniSub(4, 2)">H.4.25</button>
+                    <button class="mini-btn fig-select" id="sub4_3" onclick="setMiniSub(4, 3)">H.4.26 (Bể)</button>
+                    <button class="mini-btn" id="btnRot4" onclick="toggleMiniRot(4, 'btnRot4')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(4)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec4">Hình 4.25 SGK (Ví dụ 4): Giao tuyến $m = (SAB) \cap (SCD)$ đi qua $S$ và song song với $AB, CD$</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 3.1: BÀI TẬP 4.9, 4.10, 4.11 (H.4.27), 4.12, 4.13 (H.4.28) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>3. Giải Chi Tiết Bài Tập 4.9 – 4.13 (Hình 4.27 & Hình 4.28 – Trang 82 SGK)</h3>
+                <ul class="theory-list">
+                    <li><b>Bài 4.9:</b> Trong không gian cho $a, b, c$:
+                        <br>+ a) Sai (vì $a, b$ không cắt nhau có thể trùng nhau, song song hoặc chéo nhau).
+                        <br>+ b) <b>Đúng</b> ($b$ và $c$ chéo nhau thì không cùng thuộc một mặt phẳng).
+                        <br>+ c) <b>Đúng</b> nếu $a, b$ phân biệt cùng song song với $c$ thì $a \parallel b$.
+                        <br>+ d) Sai ($a$ và $c$ có thể song song, cắt nhau, trùng nhau hoặc chéo nhau).</li>
+                    <li><b>Bài 4.10:</b> Hình chóp $S.ABCD$ đáy là hình bình hành:
+                        <br>+ a) $AB$ và $CD$: <b>Song song</b>. &nbsp;&nbsp;+ b) $AC$ và $BD$: <b>Cắt nhau</b>. &nbsp;&nbsp;+ c) $SB$ và $CD$: <b>Chéo nhau</b>.</li>
+                    <li><b>Bài 4.11 (Hình 4.27):</b> Gọi $M, N, P, Q$ là trung điểm $SA, SB, SC, SD$. Vì $MN \parallel AB, MN = \frac{1}{2}AB$ và $QP \parallel CD, QP = \frac{1}{2}CD$, kết hợp $AB \parallel CD, AB = CD \Rightarrow MN \parallel QP$ và $MN = QP \Rightarrow$ tứ giác <b>$MNPQ$ là hình bình hành</b>.</li>
+                    <li><b>Bài 4.12:</b> Đáy $ABCD$ là hình thang ($AB \parallel CD$), $M, N$ là trung điểm $SA, SB \Rightarrow MN \parallel AB \parallel CD \Rightarrow$ tứ giác <b>$MNCD$ là hình thang</b>.</li>
+                    <li><b>Bài 4.13 (Hình 4.28):</b> Đáy $ABCD$ là hình thang ($AB \parallel CD$), $M$ là trung điểm $SD$:
+                        <br>+ a) $(MAB) \cap (SCD) = Mx \parallel AB \parallel CD$.
+                        <br>+ b) Trong $\triangle SCD$, đường thẳng $Mx$ cắt $SC$ tại $N$. Vì $M$ là trung điểm $SD$ và $MN \parallel CD$ nên $N$ là trung điểm $SC$, suy ra <b>$MN$ là đường trung bình của $\triangle SCD$</b>.</li>
+                </ul>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec5" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub5_0" onclick="setMiniSub(5, 0)">Hình 4.27 (Bài 4.11)</button>
+                    <button class="mini-btn fig-select" id="sub5_1" onclick="setMiniSub(5, 1)">Hình 4.28 (Bài 4.13)</button>
+                    <button class="mini-btn" id="btnRot5" onclick="toggleMiniRot(5, 'btnRot5')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(5)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec5">Hình 4.27 SGK (Bài 4.11): Bốn trung điểm $M, N, P, Q$ trên 4 cạnh bên tạo thành hình bình hành $MNPQ$</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 3.2: BÀI TẬP 4.14, 4.15 (H.4.29, 4.30) & EM CÓ BIẾT (H.4.31, 4.32, 4.33) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>3.2. Bài Tập 4.14, 4.15 (Hình 4.29, 4.30) & Mặt Hypebol (Hình 4.31 – 4.33 – Trang 83 SGK)</h3>
+                <ul class="theory-list">
+                    <li><b>Bài 4.14:</b> Cho tứ diện $ABCD$, $M, N$ là trung điểm $BC, CD$ và $P \in AC$.
+                        <br>+ a) Trong $\triangle BCD$, $MN$ là đường trung bình $\Rightarrow MN \parallel BD$. Hai mặt phẳng $(AMN)$ và $(BPD)$ có điểm chung $P$ và chứa hai đường thẳng song song $MN \parallel BD \Rightarrow$ giao tuyến $d = (AMN) \cap (BPD)$ là <b>đường thẳng đi qua $P$ và song song với $MN, BD$</b>.
+                        <br>+ b) Theo hệ quả định lí 3 đường giao tuyến, <b>$d \parallel BD$</b>.</li>
+                    <li><b>Bài 4.15 (Đố vui cánh cửa sổ - Hình 4.29 & 4.30):</b>
+                        <br>+ <b>Hình 4.29 (Cửa hình chữ nhật):</b> Hai mép ngoài của hai cánh cửa cùng song song với hai đường thẳng bản lề (mà hai bản lề song song với nhau) nên <b>dù mở ở góc độ nào, hai mép ngoài luôn song song với nhau</b>.
+                        <br>+ <b>Hình 4.30 (Cửa hình thang):</b> Hai mép trong nghiêng một góc so với bản lề thẳng đứng nên khi mở ra khỏi mặt phẳng khung cửa, hai đường thẳng chứa hai mép trong sẽ chéo nhau hoặc cắt nhau; chúng <b>chỉ song song khi hai cánh cửa cùng nằm trong một mặt phẳng</b> (khi đóng kín cửa).</li>
+                </ul>
+
+                <div class="tip-box tip-red" style="margin-bottom: 0;">
+                    <span class="tip-title">🌟 Em có biết? Mặt trụ, Mặt nón & Mặt Hypebol (Hyperboloid - Hình 4.31, 4.32, 4.33):</span>
+                    • Quay đường thẳng $d$ quanh trục $\Delta$ thẳng đứng cố định:
+                    <br>&nbsp;&nbsp;+ <b>Hình 4.31:</b> Nếu $d \parallel \Delta \Rightarrow$ tạo ra <b>mặt trụ</b>; nếu $d$ cắt $\Delta$ tại $O \Rightarrow$ tạo ra <b>mặt nón</b>.
+                    <br>&nbsp;&nbsp;+ <b>Hình 4.32:</b> Nếu <b>$d$ và $\Delta$ chéo nhau</b> $\Rightarrow$ tạo ra <b>mặt hypebol (hyperboloid)</b> được đan từ các đường thẳng sinh chéo nhau.
+                    <br>&nbsp;&nbsp;+ <b>Hình 4.33:</b> Khi cắt mặt hypebol bởi một mặt phẳng đi qua trục $\Delta$, giao tuyến thu được trên mặt cắt chính là hai nhánh của một <b>đường hypebol</b>!
+                </div>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec6" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select" id="sub6_0" onclick="setMiniSub(6, 0)">Bài 4.14</button>
+                    <button class="mini-btn fig-select" id="sub6_1" onclick="setMiniSub(6, 1)">H.4.29 (Cửa)</button>
+                    <button class="mini-btn fig-select" id="sub6_2" onclick="setMiniSub(6, 2)">H.4.31 (Trụ/Nón)</button>
+                    <button class="mini-btn fig-select selected" id="sub6_3" onclick="setMiniSub(6, 3)">H.4.32 & 4.33</button>
+                    <button class="mini-btn" id="btnRot6" onclick="toggleMiniRot(6, 'btnRot6')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(6)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec6">Hình 4.32 & 4.33 SGK: Mặt Hypebol tròn xoay 3D và thiết diện đường Hypebol màu hồng khi cắt qua trục $\Delta$</span>
+            </div>
+        </div>
+ 
+    </div>
+ 
+    <div id="output" class="box" style="display: none;">
+        <h2 style="text-align: center; margin-bottom: 15px;">ĐỀ KIỂM TRA ĐÁNH GIÁ NĂNG LỰC - BÀI 11: HAI ĐƯỜNG THẲNG SONG SONG</h2>
+        <div class="scroll-area" id="test-content"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="submit-btn" onclick="checkAnswers()" id="submitBtn" style="display:none;">NỘP BÀI & CHẤM ĐIỂM</button>
+        </div>
+        <h3 id="score-display" style="text-align: center; color: #0056b3; margin-top: 15px;"></h3>
+        <div id="advice-display" class="advice-box"></div>
+    </div>
+ 
+    <script>
+        // ================= HỆ THỐNG ĐỒ HỌA 3D SƯ PHẠM (VẼ RIÊNG TỪNG HÌNH 4.14 -> 4.33 SGK) =================
+        function transformPoint3D(pt, yaw, pitch, scale, cx, cy) {
+            let cosY = Math.cos(yaw), sinY = Math.sin(yaw);
+            let cosP = Math.cos(pitch), sinP = Math.sin(pitch);
+
+            let x1 = -pt.x * sinY + pt.y * cosY;
+            let y1 = -pt.x * cosY - pt.y * sinY;
+            let z1 = pt.z;
+
+            let screenYUp = z1 * cosP + y1 * sinP;
+            let depth = -y1 * cosP + z1 * sinP;
+
+            return {
+                x: cx + x1 * scale,
+                y: cy - screenYUp * scale,
+                depth: depth,
+                wx: pt.x, wy: pt.y, wz: pt.z
+            };
+        }
+
+        function isFaceFront(projVerts, faceIndices) {
+            let p0 = projVerts[faceIndices[0]];
+            let p1 = projVerts[faceIndices[1]];
+            let p2 = projVerts[faceIndices[2]];
+            let crossZ = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
+            return crossZ < 0;
+        }
+
+        function computeFaceVisibility(rawVerts, projVerts, faces) {
+            let cx = 0, cy = 0, cz = 0;
+            rawVerts.forEach(v => { cx += v.x; cy += v.y; cz += v.z; });
+            cx /= rawVerts.length; cy /= rawVerts.length; cz /= rawVerts.length;
+
+            return faces.map(f => {
+                let v0 = rawVerts[f[0]], v1 = rawVerts[f[1]], v2 = rawVerts[f[2]];
+                let ux = v1.x - v0.x, uy = v1.y - v0.y, uz = v1.z - v0.z;
+                let vx = v2.x - v0.x, vy = v2.y - v0.y, vz = v2.z - v0.z;
+                let nx = uy * vz - uz * vy;
+                let ny = uz * vx - ux * vz;
+                let nz = ux * vy - uy * vx;
+                let ox = v0.x - cx, oy = v0.y - cy, oz = v0.z - cz;
+                let dotOut = nx * ox + ny * oy + nz * oz;
+                let ordered = dotOut >= 0 ? f : [f[0], f[2], f[1]];
+                return isFaceFront(projVerts, ordered);
+            });
+        }
+
+        function drawPedagogicalEdge(ctx, p1, p2, visible, color = "#222", width = 1.6) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = visible ? width : Math.max(1.2, width - 0.3);
+            if (!visible) {
+                ctx.setLineDash([6, 4]);
+            }
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawVertexLabel(ctx, p, label, color = "#111", dx = 6, dy = -6, radius = 3.3) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+            if (label) {
+                ctx.font = "bold 13px 'Segoe UI', sans-serif";
+                ctx.fillStyle = color;
+                ctx.fillText(label, p.x + dx, p.y + dy);
+            }
+            ctx.restore();
+        }
+
+        function drawPolygonFill(ctx, pts, fillColor, strokeColor = null, lineWidth = 1.4) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+            ctx.closePath();
+            if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
+            if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth; ctx.stroke(); }
+            ctx.restore();
+        }
+
+        // HÀM VẼ CHÍNH XÁC TỪNG HÌNH TRONG SGK (figId từ '4.14' đến '4.33')
+        function renderSGKFigure3D(ctx, figId, yaw, pitch, scale, cx, cy) {
+            let P = (pt) => transformPoint3D(pt, yaw, pitch, scale, cx, cy);
+
+            if (figId === '4.14_4.15') {
+                // Vẽ mặt phẳng (alpha) bên trái minh họa a // b (H.4.14) và mặt phẳng (alpha) bên phải minh họa a, b chéo nhau (H.4.15)
+                let pl1 = [
+                    { x: -1.4, y: -2.4, z: -0.4 }, { x: 1.4, y: -2.4, z: -0.4 },
+                    { x:  1.4, y: -0.2, z: -0.4 }, { x: -1.4, y: -0.2, z: -0.4 }
+                ].map(P);
+                drawPolygonFill(ctx, pl1, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                let a1 = P({ x: -0.9, y: -2.1, z: -0.4 }), a2 = P({ x: 0.7, y: -0.6, z: -0.4 });
+                let b1 = P({ x: -0.7, y: -1.9, z: -0.4 }), b2 = P({ x: 0.9, y: -0.4, z: -0.4 });
+                // Dịch 2 đường song song rõ ràng trên pl1
+                a1 = P({ x: -0.9, y: -2.0, z: -0.4 }); a2 = P({ x: 0.4, y: -0.5, z: -0.4 });
+                b1 = P({ x: -0.3, y: -2.1, z: -0.4 }); b2 = P({ x: 1.0, y: -0.6, z: -0.4 });
+                drawPedagogicalEdge(ctx, a1, a2, true, "#0056b3", 2.0);
+                drawPedagogicalEdge(ctx, b1, b2, true, "#0056b3", 2.0);
+                ctx.save(); ctx.font = "italic bold 13px 'Segoe UI'"; ctx.fillStyle = "#0056b3";
+                ctx.fillText("a // b (H.4.14)", a2.x - 30, a2.y - 8);
+                ctx.fillText("α", pl1[0].x + 10, pl1[0].y - 6);
+                ctx.restore();
+
+                // Bên phải: Hình 4.15 (a và b chéo nhau)
+                let pl2 = [
+                    { x: -1.4, y: 0.3, z: -0.4 }, { x: 1.4, y: 0.3, z: -0.4 },
+                    { x:  1.4, y: 2.5, z: -0.4 }, { x: -1.4, y: 2.5, z: -0.4 }
+                ].map(P);
+                drawPolygonFill(ctx, pl2, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                let sb1 = P({ x: -0.9, y: 0.8, z: -0.4 }), sb2 = P({ x: 0.9, y: 2.2, z: -0.4 });
+                drawPedagogicalEdge(ctx, sb1, sb2, true, "#198754", 2.1);
+
+                // Đường a đâm xuyên mặt phẳng (alpha) tại I không thuộc b
+                let saTop = P({ x: -0.4, y: 1.8, z: 1.45 });
+                let saHit = P({ x: -0.2, y: 1.6, z: -0.4 });
+                let saHid = P({ x: -0.08, y: 1.48, z: -1.25 });
+                let saBot = P({ x: 0.05, y: 1.35, z: -2.0 });
+                drawPedagogicalEdge(ctx, saTop, saHit, true, "#dc3545", 2.2);
+                drawPedagogicalEdge(ctx, saHit, saHid, false, "#dc3545", 2.0);
+                drawPedagogicalEdge(ctx, saHid, saBot, true, "#dc3545", 2.0);
+                drawVertexLabel(ctx, saHit, "", "#dc3545", 0, 0, 3.2);
+                ctx.save(); ctx.font = "italic bold 13px 'Segoe UI'";
+                ctx.fillStyle = "#dc3545"; ctx.fillText("a", saTop.x + 6, saTop.y + 4);
+                ctx.fillStyle = "#198754"; ctx.fillText("b (H.4.15)", sb2.x - 25, sb2.y - 6);
+                ctx.restore();
+
+            } else if (figId === '4.15') {
+                // Riêng Hình 4.15 phóng to: a và b chéo nhau
+                let pl = [
+                    { x: -1.7, y: -1.9, z: -0.3 }, { x: 1.7, y: -1.9, z: -0.3 },
+                    { x:  1.7, y:  1.9, z: -0.3 }, { x: -1.7, y:  1.9, z: -0.3 }
+                ].map(P);
+                drawPolygonFill(ctx, pl, "rgba(215, 238, 255, 0.55)", "#222", 1.6);
+                let b1 = P({ x: -1.1, y: -1.2, z: -0.3 }), b2 = P({ x: 1.1, y: 1.4, z: -0.3 });
+                drawPedagogicalEdge(ctx, b1, b2, true, "#0056b3", 2.2);
+
+                let aTop = P({ x: -0.6, y: 0.9, z: 1.7 });
+                let aHit = P({ x: -0.35, y: 0.6, z: -0.3 });
+                let aHid = P({ x: -0.18, y: 0.4, z: -1.35 });
+                let aBot = P({ x: -0.02, y: 0.2, z: -2.2 });
+                drawPedagogicalEdge(ctx, aTop, aHit, true, "#dc3545", 2.3);
+                drawPedagogicalEdge(ctx, aHit, aHid, false, "#dc3545", 2.1);
+                drawPedagogicalEdge(ctx, aHid, aBot, true, "#dc3545", 2.1);
+                drawVertexLabel(ctx, aHit, "I", "#dc3545", 7, -4);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillStyle = "#dc3545"; ctx.fillText("a", aTop.x + 8, aTop.y + 4);
+                ctx.fillStyle = "#0056b3"; ctx.fillText("b", b2.x + 6, b2.y - 4);
+                ctx.fillStyle = "#0056b3"; ctx.fillText("α", pl[0].x + 12, pl[0].y - 8);
+                ctx.restore();
+
+            } else if (figId === '4.16') {
+                // Hình 4.16 SGK: Hai hình bình hành ABCD và ABEF không cùng nằm trong một mặt phẳng
+                let A = { x: -0.8, y: -0.5, z: -0.5 };
+                let B = { x:  1.1, y: -0.8, z: -0.5 };
+                let C = { x:  1.3, y:  1.5, z: -0.5 };
+                let D = { x: -0.6, y:  1.8, z: -0.5 };
+                let E = { x:  0.6, y: -1.5, z:  1.45 };
+                let F = { x: -1.3, y: -1.2, z:  1.45 };
+                let pA = P(A), pB = P(B), pC = P(C), pD = P(D), pE = P(E), pF = P(F);
+
+                drawPolygonFill(ctx, [pA, pB, pC, pD], "rgba(40, 167, 69, 0.20)");
+                drawPolygonFill(ctx, [pA, pB, pE, pF], "rgba(0, 86, 179, 0.20)");
+
+                drawPedagogicalEdge(ctx, pA, pB, true, "#dc3545", 2.3);
+                drawPedagogicalEdge(ctx, pB, pC, true, "#198754", 1.9);
+                drawPedagogicalEdge(ctx, pC, pD, true, "#dc3545", 2.1);
+                drawPedagogicalEdge(ctx, pD, pA, true, "#198754", 1.9);
+                drawPedagogicalEdge(ctx, pB, pE, true, "#0056b3", 1.9);
+                drawPedagogicalEdge(ctx, pE, pF, true, "#dc3545", 2.1);
+                drawPedagogicalEdge(ctx, pF, pA, true, "#0056b3", 1.9);
+
+                // Nối thêm CE, DF nét đứt cho Luyện tập 3
+                drawPedagogicalEdge(ctx, pC, pE, false, "#6f42c1", 1.5);
+                drawPedagogicalEdge(ctx, pD, pF, false, "#6f42c1", 1.5);
+
+                drawVertexLabel(ctx, pA, "A", "#111", -15, -4);
+                drawVertexLabel(ctx, pB, "B", "#111", -12, 16);
+                drawVertexLabel(ctx, pC, "C", "#111", 6, 14);
+                drawVertexLabel(ctx, pD, "D", "#111", 7, -4);
+                drawVertexLabel(ctx, pE, "E", "#0056b3", -16, -4);
+                drawVertexLabel(ctx, pF, "F", "#0056b3", 6, -6);
+
+            } else if (figId === '4.17') {
+                // Hình 4.17 SGK: Chóp S.ABCD đáy hình bình hành, M thuộc SA, N thuộc SB, có AC, BD nét đứt
+                let raw = [
+                    { x:  0.0, y:  0.0, z:  1.9 },  // 0: S
+                    { x:  0.2, y: -1.7, z: -1.1 },  // 1: A (trái)
+                    { x:  1.4, y: -0.3, z: -1.1 },  // 2: B (trước)
+                    { x:  0.2, y:  1.7, z: -1.1 },  // 3: C (phải)
+                    { x: -1.0, y:  0.3, z: -1.1 }   // 4: D (sau)
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3,4], [0,1,2], [0,2,3], [0,3,4], [0,4,1]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 4] }, { u: 0, v: 2, f: [1, 2] },
+                    { u: 0, v: 3, f: [2, 3] }, { u: 0, v: 4, f: [3, 4] },
+                    { u: 1, v: 2, f: [0, 1] }, { u: 2, v: 3, f: [0, 2] },
+                    { u: 3, v: 4, f: [0, 3] }, { u: 4, v: 1, f: [0, 4] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, "#111", 1.8);
+                });
+                drawPedagogicalEdge(ctx, proj[1], proj[3], fVis[0], "#444", 1.4);
+                drawPedagogicalEdge(ctx, proj[2], proj[4], fVis[0], "#444", 1.4);
+
+                let pM = P({ x: raw[0].x*0.42 + raw[1].x*0.58, y: raw[0].y*0.42 + raw[1].y*0.58, z: raw[0].z*0.42 + raw[1].z*0.58 });
+                let pN = P({ x: raw[0].x*0.52 + raw[2].x*0.48, y: raw[0].y*0.52 + raw[2].y*0.48, z: raw[0].z*0.52 + raw[2].z*0.48 });
+                drawPedagogicalEdge(ctx, pM, pN, fVis[1], "#dc3545", 2.3);
+
+                drawVertexLabel(ctx, proj[0], "S", "#0056b3", -6, -10);
+                drawVertexLabel(ctx, proj[1], "A", "#111", -16, 6);
+                drawVertexLabel(ctx, proj[2], "B", "#111", -8, 16);
+                drawVertexLabel(ctx, proj[3], "C", "#111", 8, 6);
+                drawVertexLabel(ctx, proj[4], "D", "#111", 6, -6);
+                drawVertexLabel(ctx, pM, "M", "#dc3545", -18, -2);
+                drawVertexLabel(ctx, pN, "N", "#dc3545", 7, 2);
+
+            } else if (figId === '4.18') {
+                // Hình 4.18 SGK: Hình tứ diện ABCD (nổi bật cặp cạnh đối chéo nhau AB và CD)
+                let raw = [
+                    { x:  0.0, y: -0.1, z:  1.85 }, // 0: A
+                    { x: -0.4, y: -1.85, z: -1.1 }, // 1: B
+                    { x:  1.45, y:  0.1, z: -1.1 }, // 2: C
+                    { x: -0.8, y:  1.85, z: -1.1 }  // 3: D
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3], [0,1,2], [0,2,3], [0,1,3]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 3], c: "#dc3545", w: 2.3 }, // AB
+                    { u: 0, v: 2, f: [1, 2], c: "#111", w: 1.8 },    // AC
+                    { u: 0, v: 3, f: [2, 3], c: "#111", w: 1.8 },    // AD
+                    { u: 1, v: 2, f: [0, 1], c: "#111", w: 1.8 },    // BC
+                    { u: 2, v: 3, f: [0, 2], c: "#dc3545", w: 2.3 }, // CD
+                    { u: 1, v: 3, f: [0, 3], c: "#111", w: 1.6 }     // BD
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, e.c, e.w);
+                });
+                drawVertexLabel(ctx, proj[0], "A", "#0056b3", -8, -10);
+                drawVertexLabel(ctx, proj[1], "B", "#dc3545", -18, 4);
+                drawVertexLabel(ctx, proj[2], "C", "#dc3545", -4, 16);
+                drawVertexLabel(ctx, proj[3], "D", "#dc3545", 8, 4);
+
+            } else if (figId === '4.19') {
+                // Hình 4.19 SGK: Hình chóp tứ giác S.ABCD có đáy tứ giác tổng quát
+                let raw = [
+                    { x:  0.0, y:  0.0, z:  1.9 },  // 0: S
+                    { x:  1.3, y: -1.0, z: -1.1 },  // 1: A (trước trái)
+                    { x:  1.2, y:  1.1, z: -1.1 },  // 2: B (trước phải)
+                    { x: -0.6, y:  1.8, z: -1.1 },  // 3: C (sau phải)
+                    { x: -0.9, y: -1.6, z: -1.1 }   // 4: D (sau trái)
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3,4], [0,1,2], [0,2,3], [0,3,4], [0,4,1]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 4], c: "#dc3545" }, { u: 0, v: 2, f: [1, 2], c: "#111" },
+                    { u: 0, v: 3, f: [2, 3], c: "#111" },    { u: 0, v: 4, f: [3, 4], c: "#111" },
+                    { u: 1, v: 2, f: [0, 1], c: "#111" },    { u: 2, v: 3, f: [0, 2], c: "#0056b3" },
+                    { u: 3, v: 4, f: [0, 3], c: "#0056b3" }, { u: 4, v: 1, f: [0, 4], c: "#111" }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, e.c, e.c === "#111" ? 1.8 : 2.3);
+                });
+                drawVertexLabel(ctx, proj[0], "S", "#0056b3", -6, -10);
+                drawVertexLabel(ctx, proj[1], "A", "#dc3545", -12, 14);
+                drawVertexLabel(ctx, proj[2], "B", "#0056b3", 6, 14);
+                drawVertexLabel(ctx, proj[3], "C", "#0056b3", 8, 2);
+                drawVertexLabel(ctx, proj[4], "D", "#111", -18, 2);
+
+            } else if (figId === '4.20') {
+                // Hình 4.20 SGK: Vận dụng 1 - Chiếc gậy đặt một đầu dựa vào tường và đầu kia trên mặt sàn
+                let wall = [
+                    { x: -1.4, y: -1.8, z: -1.1 }, { x: 1.4, y: -1.8, z: -1.1 },
+                    { x:  1.4, y: -1.8, z:  1.7 }, { x: -1.4, y: -1.8, z:  1.7 }
+                ].map(P);
+                let floor = [
+                    { x: -1.4, y: -1.8, z: -1.1 }, { x: 1.4, y: -1.8, z: -1.1 },
+                    { x:  1.4, y:  1.7, z: -1.1 }, { x: -1.4, y:  1.7, z: -1.1 }
+                ].map(P);
+                drawPolygonFill(ctx, floor, "rgba(220, 230, 240, 0.55)", "#555", 1.4);
+                drawPolygonFill(ctx, wall, "rgba(200, 220, 255, 0.55)", "#0056b3", 1.5);
+
+                // Mép chân tường (giao tuyến tường & sàn) và mép đứng
+                drawPedagogicalEdge(ctx, wall[0], wall[1], true, "#0056b3", 2.2);
+                drawPedagogicalEdge(ctx, wall[0], wall[3], true, "#198754", 2.2);
+
+                // Chiếc gậy màu đỏ: đầu A trên tường, đầu B trên sàn
+                let stickTop = P({ x: -0.2, y: -1.8, z: 1.15 });
+                let stickBot = P({ x:  0.65, y:  0.9, z: -1.1 });
+                drawPedagogicalEdge(ctx, stickTop, stickBot, true, "#dc3545", 3.2);
+                drawVertexLabel(ctx, stickTop, "A (Tường)", "#dc3545", 8, -4);
+                drawVertexLabel(ctx, stickBot, "B (Sàn)", "#dc3545", 8, 6);
+
+            } else if (figId === '4.21') {
+                // Hình 4.21 SGK: Mặt phẳng (P) chứa đường thẳng d và điểm M không nằm trên d (qua M có duy nhất d' // d)
+                let pl = [
+                    { x: -1.7, y: -2.0, z: -0.2 }, { x: 1.7, y: -2.0, z: -0.2 },
+                    { x:  1.7, y:  2.0, z: -0.2 }, { x: -1.7, y:  2.0, z: -0.2 }
+                ].map(P);
+                drawPolygonFill(ctx, pl, "rgba(215, 245, 225, 0.55)", "#198754", 1.6);
+
+                let d1 = P({ x:  0.5, y: -1.6, z: -0.2 }), d2 = P({ x:  0.5, y: 1.6, z: -0.2 });
+                let m1 = P({ x: -0.6, y: -1.6, z: -0.2 }), m2 = P({ x: -0.6, y: 1.6, z: -0.2 });
+                let ptM = P({ x: -0.6, y: 0.0, z: -0.2 });
+
+                drawPedagogicalEdge(ctx, d1, d2, true, "#0056b3", 2.2);
+                drawPedagogicalEdge(ctx, m1, m2, false, "#dc3545", 2.0);
+                drawVertexLabel(ctx, ptM, "M", "#dc3545", -6, -10, 3.8);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillStyle = "#0056b3"; ctx.fillText("d", d2.x - 18, d2.y - 6);
+                ctx.fillStyle = "#dc3545"; ctx.fillText("d' // d", m2.x - 42, m2.y - 6);
+                ctx.fillStyle = "#198754"; ctx.fillText("P", pl[0].x + 12, pl[0].y - 8);
+                ctx.restore();
+
+            } else if (figId === '4.22') {
+                // Hình 4.22 SGK (Ví dụ 3): Tứ diện ABCD với M, N, P, Q, R, S và hình bình hành MPNQ
+                let raw = [
+                    { x:  0.0, y: -0.1, z:  1.95 }, // 0: A
+                    { x: -0.5, y: -2.0, z: -1.15 }, // 1: B
+                    { x:  1.55, y: -0.2, z: -1.15 }, // 2: C
+                    { x: -0.85, y:  1.95, z: -1.15 }  // 3: D
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3], [0,1,2], [0,2,3], [0,1,3]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let mid = (u, v) => ({ x: (raw[u].x + raw[v].x)/2, y: (raw[u].y + raw[v].y)/2, z: (raw[u].z + raw[v].z)/2 });
+                let rM = mid(0, 1), rN = mid(2, 3), rP = mid(0, 3), rQ = mid(1, 2), rR = mid(0, 2), rS = mid(1, 3);
+                let pM = P(rM), pN = P(rN), pP = P(rP), pQ = P(rQ), pR = P(rR), pS = P(rS);
+
+                drawPolygonFill(ctx, [pM, pP, pN, pQ], "rgba(0, 168, 255, 0.25)");
+
+                let edges = [
+                    { u: 0, v: 1, f: [1, 3] }, { u: 0, v: 2, f: [1, 2] },
+                    { u: 0, v: 3, f: [2, 3] }, { u: 1, v: 2, f: [0, 1] },
+                    { u: 2, v: 3, f: [0, 2] }, { u: 1, v: 3, f: [0, 3] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, "#111", 1.8);
+                });
+
+                drawPedagogicalEdge(ctx, pM, pQ, fVis[1], "#0056b3", 1.9);
+                drawPedagogicalEdge(ctx, pP, pN, fVis[2], "#0056b3", 1.9);
+                drawPedagogicalEdge(ctx, pM, pP, fVis[3], "#0056b3", 1.8);
+                drawPedagogicalEdge(ctx, pQ, pN, fVis[0], "#0056b3", 1.8);
+
+                drawPedagogicalEdge(ctx, pM, pN, false, "#dc3545", 2.0);
+                drawPedagogicalEdge(ctx, pP, pQ, false, "#dc3545", 2.0);
+                drawPedagogicalEdge(ctx, pR, pS, false, "#198754", 2.0);
+
+                drawVertexLabel(ctx, proj[0], "A", "#111", -6, -10);
+                drawVertexLabel(ctx, proj[1], "B", "#111", -18, 4);
+                drawVertexLabel(ctx, proj[2], "C", "#111", -4, 16);
+                drawVertexLabel(ctx, proj[3], "D", "#111", 8, 4);
+                drawVertexLabel(ctx, pM, "M", "#0056b3", -16, -4);
+                drawVertexLabel(ctx, pP, "P", "#0056b3", 7, -4);
+                drawVertexLabel(ctx, pQ, "Q", "#0056b3", -16, 12);
+                drawVertexLabel(ctx, pN, "N", "#0056b3", 7, 12);
+                drawVertexLabel(ctx, pR, "R", "#198754", -14, 2);
+                drawVertexLabel(ctx, pS, "S", "#198754", 5, -6);
+
+            } else if (figId === '4.23') {
+                // Hình 4.23 SGK: Ba mặt phẳng (P), (Q), (R) cắt nhau theo 3 giao tuyến a, b, c đồng quy tại M
+                let M = { x: 0.0, y: 0.0, z: 1.5 };
+                let cBot = { x: -0.9, y: 0.0, z: -1.1 };
+                let aBot = { x:  0.9, y: -1.3, z: -1.3 };
+                let bBot = { x:  0.9, y:  1.3, z: -1.3 };
+                let pLeftTop = { x: -0.9, y: -1.8, z: 1.75 }, pLeftBot = { x: -0.9, y: -1.8, z: -1.6 };
+                let qRightTop = { x: -0.9, y: 1.8, z: 1.75 }, qRightBot = { x: -0.9, y: 1.8, z: -1.6 };
+                let cTop = { x: -0.9, y: 0.0, z: 2.0 };
+
+                let pM = P(M), pcB = P(cBot), paB = P(aBot), pbB = P(bBot);
+                let ppLT = P(pLeftTop), ppLB = P(pLeftBot), pqRT = P(qRightTop), pqRB = P(qRightBot), pcT = P(cTop);
+
+                drawPolygonFill(ctx, [pcT, ppLT, ppLB, pcB], "rgba(255, 182, 193, 0.38)", "#d63384", 1.3);
+                drawPolygonFill(ctx, [pcT, pqRT, pqRB, pcB], "rgba(152, 251, 152, 0.35)", "#198754", 1.3);
+                drawPolygonFill(ctx, [pM, paB, pbB], "rgba(135, 206, 250, 0.52)", "#0056b3", 1.5);
+
+                drawPedagogicalEdge(ctx, pcT, pM, true, "#d63384", 2.0);
+                drawPedagogicalEdge(ctx, pM, pcB, false, "#d63384", 1.9);
+                drawPedagogicalEdge(ctx, pM, paB, true, "#0056b3", 2.2);
+                drawPedagogicalEdge(ctx, pM, pbB, true, "#198754", 2.2);
+
+                drawVertexLabel(ctx, pM, "M", "#dc3545", 8, -4, 3.8);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillStyle = "#0056b3"; ctx.fillText("a", (pM.x+paB.x)/2 - 14, (pM.y+paB.y)/2);
+                ctx.fillStyle = "#198754"; ctx.fillText("b", (pM.x+pbB.x)/2 + 8, (pM.y+pbB.y)/2);
+                ctx.fillStyle = "#d63384"; ctx.fillText("c", pcB.x - 14, (pM.y+pcB.y)/2);
+                ctx.fillText("P", ppLB.x + 8, ppLB.y - 10);
+                ctx.fillStyle = "#198754"; ctx.fillText("Q", pqRB.x - 20, pqRB.y - 10);
+                ctx.fillStyle = "#0056b3"; ctx.fillText("R", paB.x + 12, paB.y - 6);
+                ctx.restore();
+
+            } else if (figId === '4.24') {
+                // Hình 4.24 SGK: Ba mặt phẳng (P), (Q), (R) cắt nhau theo 3 giao tuyến song song a // b // c
+                let cT = P({ x: -0.9, y:  0.0, z:  1.55 }), cB = P({ x: -0.9, y:  0.0, z: -1.35 });
+                let aT = P({ x:  0.8, y: -1.1, z:  1.55 }), aB = P({ x:  0.8, y: -1.1, z: -1.35 });
+                let bT = P({ x:  0.8, y:  1.1, z:  1.55 }), bB = P({ x:  0.8, y:  1.1, z: -1.35 });
+                let pLT = P({ x: -0.9, y: -1.9, z: 1.55 }), pLB = P({ x: -0.9, y: -1.9, z: -1.55 });
+                let qRT = P({ x: -0.9, y:  1.9, z: 1.55 }), qRB = P({ x: -0.9, y:  1.9, z: -1.55 });
+
+                drawPolygonFill(ctx, [cT, pLT, pLB, cB], "rgba(255, 182, 193, 0.38)", "#d63384", 1.3);
+                drawPolygonFill(ctx, [cT, qRT, qRB, cB], "rgba(152, 251, 152, 0.35)", "#198754", 1.3);
+                drawPolygonFill(ctx, [aT, bT, bB, aB], "rgba(135, 206, 250, 0.52)", "#0056b3", 1.5);
+
+                drawPedagogicalEdge(ctx, cT, cB, false, "#d63384", 2.0);
+                drawPedagogicalEdge(ctx, aT, aB, true, "#0056b3", 2.3);
+                drawPedagogicalEdge(ctx, bT, bB, true, "#198754", 2.3);
+                drawPedagogicalEdge(ctx, cT, aT, true, "#555", 1.4);
+                drawPedagogicalEdge(ctx, cT, bT, true, "#555", 1.4);
+                drawPedagogicalEdge(ctx, cB, aB, false, "#555", 1.3);
+                drawPedagogicalEdge(ctx, cB, bB, false, "#555", 1.3);
+
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillStyle = "#0056b3"; ctx.fillText("a", aT.x - 15, (aT.y+aB.y)/2);
+                ctx.fillStyle = "#198754"; ctx.fillText("b", bT.x + 8, (bT.y+bB.y)/2);
+                ctx.fillStyle = "#d63384"; ctx.fillText("c", cT.x - 14, (cT.y+cB.y)/2);
+                ctx.fillText("P", pLB.x + 8, pLB.y - 10);
+                ctx.fillStyle = "#198754"; ctx.fillText("Q", qRB.x - 20, qRB.y - 10);
+                ctx.fillStyle = "#0056b3"; ctx.fillText("R", aB.x + 12, aB.y - 8);
+                ctx.restore();
+
+            } else if (figId === '4.25') {
+                // Hình 4.25 SGK (Ví dụ 4): Hình chóp S.ABCD có đáy là hình bình hành và giao tuyến m // AB // CD
+                let raw = [
+                    { x:  0.0, y:  0.0, z:  1.65 }, // 0: S
+                    { x:  1.1, y: -1.5, z: -1.15 }, // 1: A
+                    { x:  1.1, y:  1.5, z: -1.15 }, // 2: B
+                    { x: -1.0, y:  2.0, z: -1.15 }, // 3: C
+                    { x: -1.0, y: -1.0, z: -1.15 }  // 4: D
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3,4], [0,1,2], [0,2,3], [0,3,4], [0,4,1]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 4] }, { u: 0, v: 2, f: [1, 2] },
+                    { u: 0, v: 3, f: [2, 3] }, { u: 0, v: 4, f: [3, 4] },
+                    { u: 1, v: 2, f: [0, 1] }, { u: 2, v: 3, f: [0, 2] },
+                    { u: 3, v: 4, f: [0, 3] }, { u: 4, v: 1, f: [0, 4] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    let col = (e.u === 1 && e.v === 2) || (e.u === 3 && e.v === 4) ? "#0056b3" : "#111";
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, col, 1.8);
+                });
+
+                let m1 = P({ x: 0.0, y: -2.1, z: 1.65 });
+                let m2 = P({ x: 0.0, y:  2.1, z: 1.65 });
+                drawPedagogicalEdge(ctx, m1, m2, true, "#dc3545", 2.5);
+
+                drawVertexLabel(ctx, proj[0], "S", "#dc3545", -6, -10, 3.8);
+                drawVertexLabel(ctx, proj[1], "A", "#0056b3", -15, 12);
+                drawVertexLabel(ctx, proj[2], "B", "#0056b3", 6, 12);
+                drawVertexLabel(ctx, proj[3], "C", "#0056b3", 6, -4);
+                drawVertexLabel(ctx, proj[4], "D", "#0056b3", -16, -4);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'"; ctx.fillStyle = "#dc3545";
+                ctx.fillText("m", m2.x - 16, m2.y - 8);
+                ctx.restore();
+
+            } else if (figId === '4.26') {
+                // Hình 4.26 SGK (Vận dụng 2): Bể kính chứa nước có đáy hình chữ nhật đặt nghiêng (mép nước AB // cạnh CD)
+                let boxRaw = [
+                    { x:  1.1, y: -1.8, z: -0.9 }, // 0: Đáy trước trái
+                    { x:  1.1, y:  1.8, z: -1.2 }, // 1: D (Đáy trước phải - thấp hơn do nghiêng)
+                    { x: -1.1, y:  1.8, z: -0.9 }, // 2: C (Đáy sau phải)
+                    { x: -1.1, y: -1.8, z: -0.6 }, // 3: Đáy sau trái
+                    { x:  1.1, y: -1.8, z:  1.3 }, // 4: Đỉnh trước trái
+                    { x:  1.1, y:  1.8, z:  1.0 }, // 5: Đỉnh trước phải
+                    { x: -1.1, y:  1.8, z:  1.3 }, // 6: Đỉnh sau phải
+                    { x: -1.1, y: -1.8, z:  1.6 }  // 7: Đỉnh sau trái
+                ];
+                let proj = boxRaw.map(P);
+                let faces = [[0,1,2,3], [4,5,6,7], [0,1,5,4], [3,2,6,7], [0,3,7,4], [1,2,6,5]];
+                let fVis = computeFaceVisibility(boxRaw, proj, faces);
+
+                // Mặt nước nằm ngang (z = -0.55) cắt thành bên phải tại A, B và đi qua góc trái
+                let wA = P({ x:  1.1, y:  1.8, z: -0.55 });
+                let wB = P({ x: -1.1, y:  1.8, z: -0.25 });
+                let wL1 = proj[0], wL2 = proj[3];
+
+                drawPolygonFill(ctx, [wL1, wA, wB, wL2], "rgba(0, 168, 255, 0.35)");
+                drawPolygonFill(ctx, [wA, proj[1], proj[2], wB], "rgba(0, 120, 215, 0.48)");
+
+                let edges = [
+                    { u: 0, v: 1, f: [0, 2] }, { u: 1, v: 2, f: [0, 5] },
+                    { u: 2, v: 3, f: [0, 3] }, { u: 3, v: 0, f: [0, 4] },
+                    { u: 4, v: 5, f: [1, 2] }, { u: 5, v: 6, f: [1, 5] },
+                    { u: 6, v: 7, f: [1, 3] }, { u: 7, v: 4, f: [1, 4] },
+                    { u: 0, v: 4, f: [2, 4] }, { u: 1, v: 5, f: [2, 5] },
+                    { u: 2, v: 6, f: [3, 5] }, { u: 3, v: 7, f: [3, 4] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, "#111", 1.6);
+                });
+
+                drawPedagogicalEdge(ctx, wA, wB, true, "#dc3545", 2.5);
+                drawPedagogicalEdge(ctx, proj[1], proj[2], true, "#0056b3", 2.5);
+                drawPedagogicalEdge(ctx, wL1, wA, true, "#007bff", 1.8);
+                drawPedagogicalEdge(ctx, wL2, wB, false, "#007bff", 1.6);
+
+                drawVertexLabel(ctx, wA, "A", "#dc3545", -16, -4);
+                drawVertexLabel(ctx, wB, "B", "#dc3545", 6, -4);
+                drawVertexLabel(ctx, proj[2], "C", "#0056b3", 6, 10);
+                drawVertexLabel(ctx, proj[1], "D", "#0056b3", -14, 14);
+
+            } else if (figId === '4.27') {
+                // Hình 4.27 SGK (Bài 4.11): Chóp S.ABCD đáy hình bình hành, M, N, P, Q là trung điểm SA, SB, SC, SD
+                let raw = [
+                    { x:  0.0, y: -0.2, z:  1.85 }, // 0: S
+                    { x:  1.0, y: -0.8, z: -1.15 }, // 1: A
+                    { x:  1.0, y:  1.5, z: -1.15 }, // 2: B
+                    { x: -0.9, y:  0.8, z: -1.15 }, // 3: C
+                    { x: -0.9, y: -1.5, z: -1.15 }  // 4: D
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3,4], [0,1,2], [0,2,3], [0,3,4], [0,4,1]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 4] }, { u: 0, v: 2, f: [1, 2] },
+                    { u: 0, v: 3, f: [2, 3] }, { u: 0, v: 4, f: [3, 4] },
+                    { u: 1, v: 2, f: [0, 1] }, { u: 2, v: 3, f: [0, 2] },
+                    { u: 3, v: 4, f: [0, 3] }, { u: 4, v: 1, f: [0, 4] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, "#111", 1.7);
+                });
+
+                let midS = (idx) => P({ x: (raw[0].x + raw[idx].x)/2, y: (raw[0].y + raw[idx].y)/2, z: (raw[0].z + raw[idx].z)/2 });
+                let pM = midS(1), pN = midS(2), pP = midS(3), pQ = midS(4);
+                drawPolygonFill(ctx, [pM, pN, pP, pQ], "rgba(255, 105, 180, 0.30)");
+                drawPedagogicalEdge(ctx, pM, pN, fVis[1], "#d63384", 2.1);
+                drawPedagogicalEdge(ctx, pN, pP, fVis[2], "#d63384", 2.1);
+                drawPedagogicalEdge(ctx, pP, pQ, fVis[3], "#d63384", 2.1);
+                drawPedagogicalEdge(ctx, pQ, pM, fVis[4], "#d63384", 2.1);
+
+                drawVertexLabel(ctx, proj[0], "S", "#0056b3", -6, -10);
+                drawVertexLabel(ctx, proj[1], "A", "#111", -14, 14);
+                drawVertexLabel(ctx, proj[2], "B", "#111", 6, 14);
+                drawVertexLabel(ctx, proj[3], "C", "#111", 6, -4);
+                drawVertexLabel(ctx, proj[4], "D", "#111", -16, -4);
+                drawVertexLabel(ctx, pM, "M", "#d63384", -16, 6);
+                drawVertexLabel(ctx, pN, "N", "#d63384", 7, 4);
+                drawVertexLabel(ctx, pP, "P", "#d63384", 7, -6);
+                drawVertexLabel(ctx, pQ, "Q", "#d63384", -16, -6);
+
+            } else if (figId === '4.28') {
+                // Hình 4.28 SGK (Bài 4.13): Chóp S.ABCD đáy hình thang (AB // CD), M là trung điểm SD, mặt (MAB) cắt SC tại N
+                let raw = [
+                    { x:  0.0, y:  0.0, z:  1.85 }, // 0: S
+                    { x:  1.1, y: -0.75, z: -1.15 }, // 1: A (đáy nhỏ AB)
+                    { x:  1.1, y:  0.85, z: -1.15 }, // 2: B
+                    { x: -0.95, y: 1.75, z: -1.15 }, // 3: C (đáy lớn CD)
+                    { x: -0.95, y: -1.65, z: -1.15 } // 4: D
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3,4], [0,1,2], [0,2,3], [0,3,4], [0,4,1]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 4] }, { u: 0, v: 2, f: [1, 2] },
+                    { u: 0, v: 3, f: [2, 3] }, { u: 0, v: 4, f: [3, 4] },
+                    { u: 1, v: 2, f: [0, 1] }, { u: 2, v: 3, f: [0, 2] },
+                    { u: 3, v: 4, f: [0, 3] }, { u: 4, v: 1, f: [0, 4] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, "#111", 1.7);
+                });
+
+                let pM = P({ x: (raw[0].x + raw[4].x)/2, y: (raw[0].y + raw[4].y)/2, z: (raw[0].z + raw[4].z)/2 });
+                let pN = P({ x: (raw[0].x + raw[3].x)/2, y: (raw[0].y + raw[3].y)/2, z: (raw[0].z + raw[3].z)/2 });
+
+                // Tô màu tam giác MAB như Hình 4.28 SGK và mở rộng ra thiết diện MABN
+                drawPolygonFill(ctx, [proj[1], proj[2], pM], "rgba(0, 168, 255, 0.30)");
+                drawPolygonFill(ctx, [proj[2], pN, pM], "rgba(0, 168, 255, 0.14)");
+
+                drawPedagogicalEdge(ctx, proj[1], pM, fVis[4], "#007bff", 2.2);
+                drawPedagogicalEdge(ctx, proj[1], proj[2], fVis[1], "#007bff", 2.2);
+                drawPedagogicalEdge(ctx, proj[2], pM, false, "#007bff", 1.9);
+                drawPedagogicalEdge(ctx, pM, pN, fVis[3], "#dc3545", 2.2);
+                drawPedagogicalEdge(ctx, proj[2], pN, fVis[2], "#dc3545", 1.8);
+
+                drawVertexLabel(ctx, proj[0], "S", "#0056b3", -6, -10);
+                drawVertexLabel(ctx, proj[1], "A", "#0056b3", -14, 14);
+                drawVertexLabel(ctx, proj[2], "B", "#0056b3", 6, 14);
+                drawVertexLabel(ctx, proj[3], "C", "#111", 7, 2);
+                drawVertexLabel(ctx, proj[4], "D", "#111", -16, 2);
+                drawVertexLabel(ctx, pM, "M", "#dc3545", -16, -4);
+                drawVertexLabel(ctx, pN, "N", "#dc3545", 7, -4);
+
+            } else if (figId === '4.14_bt') {
+                // Bài 4.14 SGK trang 83: Tứ diện ABCD, M, N là trung điểm BC, CD và P thuộc AC -> giao tuyến d qua P song song MN, BD
+                let raw = [
+                    { x:  0.0, y: -0.1, z:  1.9 },  // 0: A
+                    { x: -0.5, y: -1.9, z: -1.15 }, // 1: B
+                    { x:  1.5, y:  0.0, z: -1.15 }, // 2: C
+                    { x: -0.8, y:  1.9, z: -1.15 }  // 3: D
+                ];
+                let proj = raw.map(P);
+                let faces = [[1,2,3], [0,1,2], [0,2,3], [0,1,3]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [
+                    { u: 0, v: 1, f: [1, 3] }, { u: 0, v: 2, f: [1, 2] },
+                    { u: 0, v: 3, f: [2, 3] }, { u: 1, v: 2, f: [0, 1] },
+                    { u: 2, v: 3, f: [0, 2] }, { u: 1, v: 3, f: [0, 3] }
+                ];
+                edges.forEach(e => {
+                    let vis = fVis[e.f[0]] || fVis[e.f[1]];
+                    drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], vis, "#111", 1.7);
+                });
+
+                let rM = { x: (raw[1].x+raw[2].x)/2, y: (raw[1].y+raw[2].y)/2, z: raw[1].z };
+                let rN = { x: (raw[2].x+raw[3].x)/2, y: (raw[2].y+raw[3].y)/2, z: raw[2].z };
+                let rP = { x: raw[0].x*0.45 + raw[2].x*0.55, y: raw[0].y*0.45 + raw[2].y*0.55, z: raw[0].z*0.45 + raw[2].z*0.55 };
+                let pM = P(rM), pN = P(rN), pP = P(rP);
+
+                drawPolygonFill(ctx, [proj[0], pM, pN], "rgba(40, 167, 69, 0.20)");
+                drawPolygonFill(ctx, [proj[1], pP, proj[3]], "rgba(0, 123, 255, 0.18)");
+
+                drawPedagogicalEdge(ctx, proj[0], pM, fVis[1], "#198754", 1.8);
+                drawPedagogicalEdge(ctx, proj[0], pN, fVis[2], "#198754", 1.8);
+                drawPedagogicalEdge(ctx, pM, pN, fVis[0], "#198754", 2.1);
+                drawPedagogicalEdge(ctx, proj[1], pP, fVis[1], "#0056b3", 1.8);
+                drawPedagogicalEdge(ctx, proj[3], pP, fVis[2], "#0056b3", 1.8);
+
+                // Đường giao tuyến d đi qua P và song song với BD, MN
+                let vx = raw[3].x - raw[1].x, vy = raw[3].y - raw[1].y;
+                let d1 = P({ x: rP.x - vx*0.45, y: rP.y - vy*0.45, z: rP.z });
+                let d2 = P({ x: rP.x + vx*0.45, y: rP.y + vy*0.45, z: rP.z });
+                drawPedagogicalEdge(ctx, d1, d2, true, "#dc3545", 2.5);
+
+                drawVertexLabel(ctx, proj[0], "A", "#111", -6, -10);
+                drawVertexLabel(ctx, proj[1], "B", "#0056b3", -18, 4);
+                drawVertexLabel(ctx, proj[2], "C", "#111", -4, 16);
+                drawVertexLabel(ctx, proj[3], "D", "#0056b3", 8, 4);
+                drawVertexLabel(ctx, pM, "M", "#198754", -16, 12);
+                drawVertexLabel(ctx, pN, "N", "#198754", 7, 12);
+                drawVertexLabel(ctx, pP, "P", "#dc3545", 8, -4);
+                ctx.save(); ctx.font = "italic bold 13px 'Segoe UI'"; ctx.fillStyle = "#dc3545";
+                ctx.fillText("d // BD", d2.x - 10, d2.y - 6);
+                ctx.restore();
+
+            } else if (figId === '4.29') {
+                // Hình 4.29 SGK (Bài 4.15): Hai cánh cửa sổ hình chữ nhật mở ra ngoài nhưng 2 mép ngoài luôn song song
+                let fLTop = { x:  0.0, y: -1.6, z:  1.4 }, fLBot = { x:  0.0, y: -1.6, z: -1.4 };
+                let fRTop = { x:  0.0, y:  1.6, z:  1.4 }, fRBot = { x:  0.0, y:  1.6, z: -1.4 };
+                let pfLT = P(fLTop), pfLB = P(fLBot), pfRT = P(fRTop), pfRB = P(fRBot);
+                drawPedagogicalEdge(ctx, pfLT, pfRT, true, "#555", 1.8);
+                drawPedagogicalEdge(ctx, pfLB, pfRB, true, "#555", 1.8);
+                drawPedagogicalEdge(ctx, pfLT, pfLB, true, "#0056b3", 2.5);
+                drawPedagogicalEdge(ctx, pfRT, pfRB, true, "#0056b3", 2.5);
+
+                // Cánh cửa trái mở góc 45 độ, cánh cửa phải mở góc 65 độ
+                let oLTop = P({ x: 1.1, y: -0.7, z:  1.4 }), oLBot = P({ x: 1.1, y: -0.7, z: -1.4 });
+                let oRTop = P({ x: 1.25, y: 0.9, z:  1.4 }), oRBot = P({ x: 1.25, y: 0.9, z: -1.4 });
+
+                drawPolygonFill(ctx, [pfLT, oLTop, oLBot, pfLB], "rgba(0, 168, 255, 0.35)", "#0056b3", 1.6);
+                drawPolygonFill(ctx, [pfRT, oRTop, oRBot, pfRB], "rgba(0, 168, 255, 0.35)", "#0056b3", 1.6);
+
+                // Hai mép ngoài màu đỏ luôn song song với 2 bản lề xanh nên song song nhau
+                drawPedagogicalEdge(ctx, oLTop, oLBot, true, "#dc3545", 2.8);
+                drawPedagogicalEdge(ctx, oRTop, oRBot, true, "#dc3545", 2.8);
+
+                ctx.save(); ctx.font = "bold 12px 'Segoe UI'"; ctx.fillStyle = "#dc3545";
+                ctx.fillText("2 mép ngoài luôn //", oLTop.x - 10, oLTop.y - 10);
+                ctx.restore();
+
+            } else if (figId === '4.31') {
+                // Hình 4.31 SGK: Mặt trụ (d // Delta) bên trái và Mặt nón (d cắt Delta tại O) bên phải
+                let R = 0.85, H = 1.45;
+                // Trụ bên trái (y = -1.25)
+                let cY = -1.25;
+                let tAx1 = P({ x: 0, y: cY, z: H + 0.35 }), tAx2 = P({ x: 0, y: cY, z: -H - 0.35 });
+                drawPedagogicalEdge(ctx, tAx1, tAx2, false, "#111", 1.5);
+                for (let zS of [-1, 1]) {
+                    ctx.save(); ctx.beginPath();
+                    for (let j = 0; j <= 36; j++) {
+                        let a = (j/36)*Math.PI*2;
+                        let pt = P({ x: R*Math.cos(a), y: cY + R*Math.sin(a), z: zS*H });
+                        if (j === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.strokeStyle = "#0056b3"; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
+                }
+                let g1T = P({ x: 0, y: cY - R, z: H }), g1B = P({ x: 0, y: cY - R, z: -H });
+                let g2T = P({ x: 0, y: cY + R, z: H + 0.25 }), g2B = P({ x: 0, y: cY + R, z: -H - 0.25 });
+                drawPedagogicalEdge(ctx, g1T, g1B, true, "#0056b3", 1.7);
+                drawPedagogicalEdge(ctx, g2T, g2B, true, "#dc3545", 2.2);
+                ctx.save(); ctx.font = "italic bold 13px 'Segoe UI'";
+                ctx.fillStyle = "#111"; ctx.fillText("Δ", tAx2.x - 14, tAx2.y + 4);
+                ctx.fillStyle = "#dc3545"; ctx.fillText("d // Δ", g2T.x - 15, g2T.y - 6);
+                ctx.restore();
+
+                // Nón bên phải (y = +1.25)
+                let kY = 1.25;
+                let kAx1 = P({ x: 0, y: kY, z: H + 0.35 }), kAx2 = P({ x: 0, y: kY, z: -H - 0.35 });
+                let pO = P({ x: 0, y: kY, z: 0.2 });
+                drawPedagogicalEdge(ctx, kAx1, kAx2, false, "#111", 1.5);
+                for (let zVal of [-H, H]) {
+                    let rCur = zVal > 0 ? R * 0.72 : R;
+                    ctx.save(); ctx.beginPath();
+                    for (let j = 0; j <= 36; j++) {
+                        let a = (j/36)*Math.PI*2;
+                        let pt = P({ x: rCur*Math.cos(a), y: kY + rCur*Math.sin(a), z: zVal });
+                        if (j === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.strokeStyle = "#198754"; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
+                }
+                let n1T = P({ x: 0, y: kY - R*0.72, z: H }), n1B = P({ x: 0, y: kY + R, z: -H });
+                let n2T = P({ x: 0, y: kY + R*0.72, z: H }), n2B = P({ x: 0, y: kY - R, z: -H });
+                drawPedagogicalEdge(ctx, n1T, n1B, true, "#dc3545", 2.2);
+                drawPedagogicalEdge(ctx, n2T, n2B, true, "#198754", 1.7);
+                drawVertexLabel(ctx, pO, "O", "#dc3545", 7, -2);
+
+            } else if (figId === '4.32_4.33') {
+                // Hình 4.32 & 4.33 SGK: Mặt Hypebol (Hyperboloid) tạo bởi d chéo Delta & mặt cắt chứa trục Delta tạo ra đường Hypebol
+                let numLines = 24;
+                let R = 1.35, H = 1.65, twist = 2.15;
+                let rNeck = R * Math.cos(twist / 2);
+
+                // Vẽ mặt phẳng cắt đi qua trục Delta (Hình 4.33) màu hồng nhạt
+                let leftHyp = [], rightHyp = [];
+                for (let k = -16; k <= 16; k++) {
+                    let z = (k / 16) * H;
+                    let rZ = Math.sqrt(rNeck * rNeck + (R * R - rNeck * rNeck) * (z * z) / (H * H));
+                    leftHyp.push(P({ x: 0, y: -rZ, z: z }));
+                    rightHyp.unshift(P({ x: 0, y: rZ, z: z }));
+                }
+                drawPolygonFill(ctx, leftHyp.concat(rightHyp), "rgba(255, 182, 193, 0.38)");
+
+                // Tô đậm 2 nhánh đường Hypebol vết cắt (Hình 4.33)
+                ctx.save();
+                ctx.beginPath();
+                leftHyp.forEach((pt, idx) => { if (idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+                ctx.strokeStyle = "#d63384"; ctx.lineWidth = 2.4; ctx.stroke();
+                ctx.beginPath();
+                rightHyp.forEach((pt, idx) => { if (idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+                ctx.strokeStyle = "#d63384"; ctx.lineWidth = 2.4; ctx.stroke();
+                ctx.restore();
+
+                let topAxis = P({ x: 0, y: 0, z: H + 0.35 }), botAxis = P({ x: 0, y: 0, z: -H - 0.35 });
+                drawPedagogicalEdge(ctx, topAxis, botAxis, false, "#111", 1.7);
+                drawVertexLabel(ctx, topAxis, "Δ (H.4.32 & 4.33)", "#0056b3", -45, -8, 3.2);
+
+                for (let i = 0; i < numLines; i++) {
+                    let theta = (i / numLines) * Math.PI * 2;
+                    let pTop = P({ x: R * Math.cos(theta), y: R * Math.sin(theta), z: H });
+                    let pBot1 = P({ x: R * Math.cos(theta + twist), y: R * Math.sin(theta + twist), z: -H });
+                    let pBot2 = P({ x: R * Math.cos(theta - twist), y: R * Math.sin(theta - twist), z: -H });
+
+                    let isFront = (pTop.depth + pBot1.depth) < 0;
+                    let col1 = i === 0 ? "#dc3545" : (isFront ? "rgba(155, 30, 130, 0.72)" : "rgba(155, 30, 130, 0.25)");
+                    let col2 = isFront ? "rgba(0, 102, 204, 0.62)" : "rgba(0, 102, 204, 0.22)";
+                    drawPedagogicalEdge(ctx, pTop, pBot1, true, col1, i === 0 ? 2.6 : 1.15);
+                    drawPedagogicalEdge(ctx, pTop, pBot2, true, col2, 1.05);
+                    if (i === 0) drawVertexLabel(ctx, pTop, "d", "#dc3545", 6, -4, 3.4);
+                }
+
+                for (let zSign of [-1, 1]) {
+                    ctx.save(); ctx.beginPath();
+                    for (let j = 0; j <= 48; j++) {
+                        let ang = (j / 48) * Math.PI * 2;
+                        let pt = P({ x: R * Math.cos(ang), y: R * Math.sin(ang), z: zSign * H });
+                        if (j === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.strokeStyle = "#222"; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+                }
+            }
+        }
+
+        // --- CẤU HÌNH BẢNG TRUNG TÂM 12 CHẾ ĐỘ (BAO PHỦ H.4.14 ĐẾN H.4.33) ---
+        const mainFigList = [
+            { fig: '4.14_4.15', yaw: -0.32, pitch: 0.42, cap: "Hình 4.14 & 4.15 SGK: 4 vị trí tương đối của hai đường thẳng $a, b$ (Đồng phẳng: cắt, song song, trùng; Chéo nhau)" },
+            { fig: '4.16',      yaw: -0.35, pitch: 0.36, cap: "Hình 4.16 SGK (Ví dụ 1 & Luyện tập 3): Hai hình bình hành $ABCD$ và $ABEF$ không cùng nằm trong một mặt phẳng" },
+            { fig: '4.17',      yaw: -0.28, pitch: 0.35, cap: "Hình 4.17 SGK (Luyện tập 1): Hình chóp $S.ABCD$ đáy là hình bình hành với $M \\in SA, N \\in SB$" },
+            { fig: '4.18',      yaw: -0.28, pitch: 0.34, cap: "Hình 4.18 SGK (Ví dụ 2): Hình tứ diện $ABCD$ với 3 cặp cạnh đối diện đôi một chéo nhau ($AB$ và $CD$, $AC$ và $BD$, $AD$ và $BC$)" },
+            { fig: '4.19',      yaw: -0.25, pitch: 0.35, cap: "Hình 4.19 SGK (Luyện tập 2): Hình chóp tứ giác $S.ABCD$ — nhận biết các cạnh chéo với $SA$ và $BC$" },
+            { fig: '4.21',      yaw: -0.32, pitch: 0.42, cap: "Hình 4.21 SGK (HĐ2): Mặt phẳng $(P)$ chứa đường thẳng $d$ và điểm $M \\notin d$, xác định duy nhất $d' \\parallel d$ qua $M$" },
+            { fig: '4.22',      yaw: -0.28, pitch: 0.34, cap: "Hình 4.22 SGK (Ví dụ 3): Tứ diện $ABCD$ với 6 trung điểm $M, N, P, Q, R, S$ tạo thành hình bình hành $MPNQ$" },
+            { fig: '4.24',      yaw: -0.35, pitch: 0.32, cap: "Hình 4.23 & 4.24 SGK (HĐ4): Định lí về ba đường giao tuyến $a, b, c$ của ba mặt phẳng $(P), (Q), (R)$" },
+            { fig: '4.25',      yaw: -0.32, pitch: 0.34, cap: "Hình 4.25 SGK (Ví dụ 4): Giao tuyến của $(SAB)$ và $(SCD)$ là đường thẳng $m$ qua $S$ và song song với $AB, CD$" },
+            { fig: '4.28',      yaw: -0.32, pitch: 0.34, cap: "Hình 4.28 SGK (Bài 4.13): Giao tuyến $MN$ của $(MAB)$ và $(SCD)$ là đường trung bình của $\\triangle SCD$" },
+            { fig: '4.29',      yaw: -0.38, pitch: 0.28, cap: "Hình 4.29 SGK (Bài 4.15 - Đố vui): Hai cánh cửa sổ hình chữ nhật mở ở mọi góc độ luôn có 2 mép ngoài song song" },
+            { fig: '4.32_4.33', yaw: -0.35, pitch: 0.28, cap: "Hình 4.32 & 4.33 SGK (Em có biết): Mặt Hypebol tròn xoay 3D (Hyperboloid) và vết cắt đường Hypebol qua trục $\\Delta$" }
+        ];
+
+        let mainSim = {
+            mode: 0,
+            yaw: mainFigList[0].yaw,
+            pitch: mainFigList[0].pitch,
+            autoRotate: false,
+            dragging: false,
+            lastX: 0,
+            lastY: 0
+        };
+
+        function setMainMode(m) {
+            mainSim.mode = m;
+            mainSim.yaw = mainFigList[m].yaw;
+            mainSim.pitch = mainFigList[m].pitch;
+            for (let i = 0; i < mainFigList.length; i++) {
+                let btn = document.getElementById('modeBtn' + i);
+                if (btn) {
+                    if (i === m) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            }
+            let cap = document.getElementById('main3DCaption');
+            cap.innerHTML = mainFigList[m].cap;
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([cap]).catch(()=>{});
+            }
+        }
+
+        function updateMainRotBtn() {
+            let btn = document.getElementById('btnMainAutoRot');
+            if (!btn) return;
+            if (mainSim.autoRotate) {
+                btn.innerHTML = "⏸️ Đang tự xoay 360° (Bấm để dừng)";
+                btn.classList.add('running');
+            } else {
+                btn.innerHTML = "▶️ Bật tự động xoay 360°";
+                btn.classList.remove('running');
+            }
+        }
+
+        function toggleMainAutoRotate() {
+            mainSim.autoRotate = !mainSim.autoRotate;
+            updateMainRotBtn();
+        }
+
+        function resetMainStandardView() {
+            mainSim.autoRotate = false;
+            updateMainRotBtn();
+            mainSim.yaw = mainFigList[mainSim.mode].yaw;
+            mainSim.pitch = mainFigList[mainSim.mode].pitch;
+        }
+
+        function setMainView(yaw, pitch) {
+            mainSim.autoRotate = false;
+            updateMainRotBtn();
+            mainSim.yaw = yaw;
+            mainSim.pitch = pitch;
+        }
+
+        // --- 7 KHUNG HÌNH 3D RIÊNG BIỆT Ở TỪNG MỤC TRONG BÀI ---
+        let miniSims = [
+            {
+                id: 'canvasSec0', capId: null, subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.32, pitch: 0.42,
+                options: [
+                    { fig: '4.14_4.15', yaw: -0.32, pitch: 0.42, cap: "" },
+                    { fig: '4.15',      yaw: -0.35, pitch: 0.38, cap: "" }
+                ]
+            },
+            {
+                id: 'canvasSec1', capId: 'capSec1', subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.35, pitch: 0.36,
+                options: [
+                    { fig: '4.16', yaw: -0.35, pitch: 0.36, cap: "Hình 4.16 SGK: Hai hình bình hành $ABCD$ và $ABEF$ không cùng nằm trong một mặt phẳng" },
+                    { fig: '4.17', yaw: -0.28, pitch: 0.35, cap: "Hình 4.17 SGK: Hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành và $M \\in SA, N \\in SB$" }
+                ]
+            },
+            {
+                id: 'canvasSec2', capId: 'capSec2', subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.28, pitch: 0.34,
+                options: [
+                    { fig: '4.18', yaw: -0.28, pitch: 0.34, cap: "Hình 4.18 SGK: Hình tứ diện $ABCD$ với 3 cặp cạnh đối diện chéo nhau ($AB$ và $CD$, $AC$ và $BD$, $AD$ và $BC$)" },
+                    { fig: '4.19', yaw: -0.25, pitch: 0.35, cap: "Hình 4.19 SGK: Hình chóp tứ giác $S.ABCD$ — các đường thẳng $BC, CD$ chéo với $SA$" },
+                    { fig: '4.20', yaw: -0.38, pitch: 0.32, cap: "Hình 4.20 SGK: Chiếc gậy $AB$ đặt một đầu $A$ dựa vào tường và đầu $B$ trên mặt sàn" }
+                ]
+            },
+            {
+                id: 'canvasSec3', capId: 'capSec3', subIdx: 1, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.28, pitch: 0.34,
+                options: [
+                    { fig: '4.21', yaw: -0.32, pitch: 0.42, cap: "Hình 4.21 SGK: Mặt phẳng $(P)$ chứa đường thẳng $d$ và điểm $M \\notin d$, có duy nhất $d' \\parallel d$ đi qua $M$" },
+                    { fig: '4.22', yaw: -0.28, pitch: 0.34, cap: "Hình 4.22 SGK (Ví dụ 3): Tứ diện $ABCD$ với 6 trung điểm $M, N, P, Q, R, S$ và hình bình hành $MPNQ$" }
+                ]
+            },
+            {
+                id: 'canvasSec4', capId: 'capSec4', subIdx: 2, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.32, pitch: 0.34,
+                options: [
+                    { fig: '4.23', yaw: -0.35, pitch: 0.32, cap: "Hình 4.23 SGK: Ba mặt phẳng $(P), (Q), (R)$ cắt nhau theo 3 giao tuyến $a, b, c$ đồng quy tại $M$" },
+                    { fig: '4.24', yaw: -0.35, pitch: 0.32, cap: "Hình 4.24 SGK: Ba mặt phẳng $(P), (Q), (R)$ cắt nhau theo 3 giao tuyến $a, b, c$ đôi một song song" },
+                    { fig: '4.25', yaw: -0.32, pitch: 0.34, cap: "Hình 4.25 SGK (Ví dụ 4): Giao tuyến $m = (SAB) \\cap (SCD)$ đi qua $S$ và song song với $AB, CD$" },
+                    { fig: '4.26', yaw: -0.35, pitch: 0.32, cap: "Hình 4.26 SGK (Vận dụng 2): Bể kính chứa nước đặt nghiêng có đường mép nước $AB \\parallel CD$" }
+                ]
+            },
+            {
+                id: 'canvasSec5', capId: 'capSec5', subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.30, pitch: 0.34,
+                options: [
+                    { fig: '4.27', yaw: -0.30, pitch: 0.34, cap: "Hình 4.27 SGK (Bài 4.11): Bốn trung điểm $M, N, P, Q$ trên 4 cạnh bên tạo thành hình bình hành $MNPQ$" },
+                    { fig: '4.28', yaw: -0.32, pitch: 0.34, cap: "Hình 4.28 SGK (Bài 4.13): Giao tuyến của $(MAB)$ và $(SCD)$ cắt $SC$ tại $N$, tạo thành đường trung bình $MN$" }
+                ]
+            },
+            {
+                id: 'canvasSec6', capId: 'capSec6', subIdx: 3, auto: false, dragging: false, lastX: 0, lastY: 0,
+                yaw: -0.35, pitch: 0.28,
+                options: [
+                    { fig: '4.14_bt',   yaw: -0.28, pitch: 0.34, cap: "Bài 4.14 SGK: Giao tuyến $d = (AMN) \\cap (BPD)$ đi qua $P \\in AC$ và song song với $MN, BD$" },
+                    { fig: '4.29',      yaw: -0.38, pitch: 0.28, cap: "Hình 4.29 SGK (Bài 4.15): Hai cánh cửa sổ hình chữ nhật khi mở luôn có hai mép ngoài song song" },
+                    { fig: '4.31',      yaw: -0.30, pitch: 0.30, cap: "Hình 4.31 SGK: Mặt trụ tròn xoay ($d \\parallel \\Delta$) và Mặt nón tròn xoay ($d$ cắt $\\Delta$ tại $O$)" },
+                    { fig: '4.32_4.33', yaw: -0.35, pitch: 0.28, cap: "Hình 4.32 & 4.33 SGK: Mặt Hypebol tròn xoay 3D và thiết diện đường Hypebol màu hồng khi cắt qua trục $\\Delta$" }
+                ]
+            }
+        ];
+
+        function setMiniSub(secIdx, optIdx) {
+            let sim = miniSims[secIdx];
+            sim.subIdx = optIdx;
+            let opt = sim.options[optIdx];
+            sim.yaw = opt.yaw;
+            sim.pitch = opt.pitch;
+            for (let k = 0; k < sim.options.length; k++) {
+                let b = document.getElementById(`sub${secIdx}_${k}`);
+                if (b) {
+                    if (k === optIdx) b.classList.add('selected');
+                    else b.classList.remove('selected');
+                }
+            }
+            if (sim.capId && opt.cap) {
+                let capEl = document.getElementById(sim.capId);
+                if (capEl) {
+                    capEl.innerHTML = opt.cap;
+                    if (window.MathJax && MathJax.typesetPromise) {
+                        MathJax.typesetPromise([capEl]).catch(()=>{});
+                    }
+                }
+            }
+        }
+
+        function toggleMiniRot(idx, btnId) {
+            miniSims[idx].auto = !miniSims[idx].auto;
+            let btn = document.getElementById(btnId);
+            if (miniSims[idx].auto) {
+                btn.classList.add('active');
+                btn.innerText = "⏸️ Dừng";
+            } else {
+                btn.classList.remove('active');
+                btn.innerText = "▶️ Tự xoay";
+            }
+        }
+
+        function resetMiniView(idx) {
+            let sim = miniSims[idx];
+            sim.auto = false;
+            let btn = document.getElementById('btnRot' + idx);
+            if (btn) {
+                btn.classList.remove('active');
+                btn.innerText = "▶️ Tự xoay";
+            }
+            let opt = sim.options[sim.subIdx];
+            sim.yaw = opt.yaw;
+            sim.pitch = opt.pitch;
+        }
+
+        function bindDragRotate(canvas, stateObj, isMain = false, miniIdx = -1) {
+            const getPos = (e) => {
+                if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                return { x: e.clientX, y: e.clientY };
+            };
+            const start = (e) => {
+                stateObj.dragging = true;
+                if (isMain) {
+                    stateObj.autoRotate = false;
+                    updateMainRotBtn();
+                } else {
+                    stateObj.auto = false;
+                    let btn = document.getElementById('btnRot' + miniIdx);
+                    if (btn) { btn.classList.remove('active'); btn.innerText = "▶️ Tự xoay"; }
+                }
+                let pos = getPos(e);
+                stateObj.lastX = pos.x;
+                stateObj.lastY = pos.y;
+            };
+            const move = (e) => {
+                if (!stateObj.dragging) return;
+                if (e.cancelable) e.preventDefault();
+                let pos = getPos(e);
+                let dx = pos.x - stateObj.lastX;
+                let dy = pos.y - stateObj.lastY;
+                stateObj.yaw += dx * 0.012;
+                stateObj.pitch = Math.max(-1.45, Math.min(1.45, stateObj.pitch + dy * 0.012));
+                stateObj.lastX = pos.x;
+                stateObj.lastY = pos.y;
+            };
+            const end = () => { stateObj.dragging = false; };
+
+            canvas.addEventListener('mousedown', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            canvas.addEventListener('touchstart', start, { passive: false });
+            canvas.addEventListener('touchmove', move, { passive: false });
+            canvas.addEventListener('touchend', end);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let mainC = document.getElementById('main3DCanvas');
+            if (mainC) bindDragRotate(mainC, mainSim, true);
+
+            miniSims.forEach((sim, idx) => {
+                let c = document.getElementById(sim.id);
+                if (c) bindDragRotate(c, sim, false, idx);
+            });
+
+            function animateLoop() {
+                let mainC = document.getElementById('main3DCanvas');
+                if (mainC) {
+                    if (mainSim.autoRotate && !mainSim.dragging) mainSim.yaw += 0.008;
+                    let ctx = mainC.getContext('2d');
+                    ctx.clearRect(0, 0, mainC.width, mainC.height);
+                    let curFig = mainFigList[mainSim.mode].fig;
+                    renderSGKFigure3D(ctx, curFig, mainSim.yaw, mainSim.pitch, 68, mainC.width / 2, mainC.height / 2 + 10);
+                }
+
+                miniSims.forEach(sim => {
+                    let c = document.getElementById(sim.id);
+                    if (c) {
+                        if (sim.auto && !sim.dragging) sim.yaw += 0.009;
+                        let ctx = c.getContext('2d');
+                        ctx.clearRect(0, 0, c.width, c.height);
+                        let curFig = sim.options[sim.subIdx].fig;
+                        let sc = curFig === '4.14_4.15' ? 42 : 52;
+                        renderSGKFigure3D(ctx, curFig, sim.yaw, sim.pitch, sc, c.width / 2, c.height / 2 + 8);
+                    }
+                });
+
+                requestAnimationFrame(animateLoop);
+            }
+            animateLoop();
+        });
+
+        // --- HỆ THỐNG ĐIỀU KHIỂN GIAO DIỆN ---
+        let currentFontSize = 14; let currentIlluSize = 300; let isExpanded = false;
+        function changeFontSize(delta) { currentFontSize += delta; if (currentFontSize < 10) currentFontSize = 10; if (currentFontSize > 32) currentFontSize = 32; document.documentElement.style.setProperty('--font-size', currentFontSize + 'pt'); document.getElementById('font-size-display').innerText = currentFontSize + 'pt'; }
+        function changeIlluSize(delta) { currentIlluSize += delta; if (currentIlluSize < 160) currentIlluSize = 550; document.documentElement.style.setProperty('--illu-size', currentIlluSize + 'px'); document.getElementById('illu-size-display').innerText = currentIlluSize + 'px'; }
+        function toggleWidth() { isExpanded = !isExpanded; document.body.style.maxWidth = isExpanded ? '100%' : '1020px'; }
+        function toggleFullScreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => { alert(err.message); }); } else { if (document.exitFullscreen) { document.exitFullscreen(); } } }
+ 
+        // --- BỘ NHỚ LÕI & HÀM BỔ TRỢ SINH ĐỀ ---
+        let questionCounter = 1;
+        function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
+        function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        // ================= SINH CÂU HỎI TRẮC NGHIỆM 4 ĐÁP ÁN (DẠNG 1) =================
+        function genT1_ViTriTuongDoi() {
+            let bank = [
+                {
+                    q: `Trong không gian, hai đường thẳng <b>không cùng nằm trong bất kì mặt phẳng nào</b> được gọi là:`,
+                    ans: `Hai đường thẳng chéo nhau.`,
+                    w1: `Hai đường thẳng song song.`,
+                    w2: `Hai đường thẳng cắt nhau.`,
+                    w3: `Hai đường thẳng đồng phẳng.`
+                },
+                {
+                    q: `Trong không gian, cho hai đường thẳng $a$ và $b$ <b>không có điểm chung</b>. Khẳng định nào sau đây là <b>đúng</b>?`,
+                    ans: `Hai đường thẳng $a$ và $b$ có thể song song hoặc chéo nhau.`,
+                    w1: `Hai đường thẳng $a$ và $b$ bắt buộc phải song song với nhau.`,
+                    w2: `Hai đường thẳng $a$ và $b$ bắt buộc phải chéo nhau.`,
+                    w3: `Hai đường thẳng $a$ và $b$ luôn cùng nằm trong một mặt phẳng.`
+                },
+                {
+                    q: `(Bài 4.9 SGK trang 82) Trong không gian, cho ba đường thẳng phân biệt $a, b, c$. Mệnh đề nào sau đây là <b>đúng</b>?`,
+                    ans: `Nếu $b$ và $c$ chéo nhau thì $b$ và $c$ không cùng thuộc một mặt phẳng.`,
+                    w1: `Nếu $a$ và $b$ không cắt nhau thì $a$ và $b$ song song.`,
+                    w2: `Nếu $a$ và $b$ cắt nhau, $b$ và $c$ cắt nhau thì $a$ và $c$ cắt nhau.`,
+                    w3: `Nếu $a$ chéo với $b$ và $b$ chéo với $c$ thì $a$ chéo với $c$.`
+                }
+            ];
+            let item = bank[randInt(0, bank.length - 1)];
+            let opts = shuffle([{t: item.ans, v: true}, {t: item.w1, v: false}, {t: item.w2, v: false}, {t: item.w3, v: false}]);
+            let html = `<div class="question type1-q"><div><b>Câu ${questionCounter++}:</b> ${item.q}</div><ul class="options">`;
+            let labels = ['A', 'B', 'C', 'D'];
+            opts.forEach((opt, idx) => { html += `<li><label><input type="radio" name="q1_${questionCounter}" value="${opt.v}"> <b>${labels[idx]}.</b> ${opt.t}</label></li>`; });
+            return html + `</ul></div>`;
+        }
+
+        function genT1_ChopTuGiacVaTuDien() {
+            let bank = [
+                {
+                    q: `(Bài 4.10 SGK trang 82) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành. Vị trí tương đối của hai đường thẳng $SB$ và $CD$ là:`,
+                    ans: `Chéo nhau`,
+                    w1: `Song song với nhau`,
+                    w2: `Cắt nhau`,
+                    w3: `Trùng nhau`
+                },
+                {
+                    q: `(Luyện tập 2 SGK trang 80) Trong hình chóp tứ giác $S.ABCD$ (Hình 4.19), cặp đường thẳng nào sau đây đều <b>chéo</b> với đường thẳng $SA$?`,
+                    ans: `Đường thẳng $BC$ và đường thẳng $CD$`,
+                    w1: `Đường thẳng $AB$ và đường thẳng $AD$`,
+                    w2: `Đường thẳng $SB$ và đường thẳng $SD$`,
+                    w3: `Đường thẳng $SC$ và đường thẳng $AC$`
+                },
+                {
+                    q: `(Ví dụ 2 SGK trang 80) Cho hình tứ diện $ABCD$ (Hình 4.18). Trong các cặp đường thẳng sau, cặp đường thẳng nào <b>chéo nhau</b>?`,
+                    ans: `$AB$ và $CD$`,
+                    w1: `$AB$ và $AC$`,
+                    w2: `$BC$ và $CD$`,
+                    w3: `$AD$ và $BD$`
+                }
+            ];
+            let item = bank[randInt(0, bank.length - 1)];
+            let opts = shuffle([{t: item.ans, v: true}, {t: item.w1, v: false}, {t: item.w2, v: false}, {t: item.w3, v: false}]);
+            let html = `<div class="question type1-q"><div><b>Câu ${questionCounter++}:</b> ${item.q}</div><ul class="options">`;
+            let labels = ['A', 'B', 'C', 'D'];
+            opts.forEach((opt, idx) => { html += `<li><label><input type="radio" name="q1_${questionCounter}" value="${opt.v}"> <b>${labels[idx]}.</b> ${opt.t}</label></li>`; });
+            return html + `</ul></div>`;
+        }
+
+        function genT1_DinhLiBaGiaoTuyen() {
+            let bank = [
+                {
+                    q: `(Định lí về ba đường giao tuyến - SGK trang 81) Nếu ba mặt phẳng đôi một cắt nhau theo ba giao tuyến phân biệt thì ba giao tuyến đó:`,
+                    ans: `Đồng quy hoặc đôi một song song với nhau.`,
+                    w1: `Luôn luôn đôi một song song với nhau.`,
+                    w2: `Luôn luôn đồng quy tại một điểm duy nhất.`,
+                    w3: `Đôi một chéo nhau trong không gian.`
+                },
+                {
+                    q: `(Ví dụ 4 SGK trang 82) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành (Hình 4.25). Giao tuyến của hai mặt phẳng $(SAB)$ và $(SCD)$ là:`,
+                    ans: `Đường thẳng $m$ đi qua $S$ và song song với $AB, CD$.`,
+                    w1: `Đường thẳng $SO$ (với $O$ là giao điểm của $AC$ và $BD$).`,
+                    w2: `Đường thẳng đi qua $S$ và song song với $AD, BC$.`,
+                    w3: `Đường thẳng $AB$.`
+                },
+                {
+                    q: `(Luyện tập 4 SGK trang 82) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành. Giao tuyến của hai mặt phẳng $(SAD)$ và $(SBC)$ là:`,
+                    ans: `Đường thẳng đi qua $S$ và song song với $AD, BC$.`,
+                    w1: `Đường thẳng đi qua $S$ và song song với $AB, CD$.`,
+                    w2: `Đường thẳng $SA$.`,
+                    w3: `Đường thẳng $SC$.`
+                }
+            ];
+            let item = bank[randInt(0, bank.length - 1)];
+            let opts = shuffle([{t: item.ans, v: true}, {t: item.w1, v: false}, {t: item.w2, v: false}, {t: item.w3, v: false}]);
+            let html = `<div class="question type1-q"><div><b>Câu ${questionCounter++}:</b> ${item.q}</div><ul class="options">`;
+            let labels = ['A', 'B', 'C', 'D'];
+            opts.forEach((opt, idx) => { html += `<li><label><input type="radio" name="q1_${questionCounter}" value="${opt.v}"> <b>${labels[idx]}.</b> ${opt.t}</label></li>`; });
+            return html + `</ul></div>`;
+        }
+
+        function genT1_BaiTap411Den414() {
+            let bank = [
+                {
+                    q: `(Bài 4.11 SGK trang 82) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành. Gọi $M, N, P, Q$ lần lượt là trung điểm của $SA, SB, SC, SD$ (Hình 4.27). Tứ giác $MNPQ$ là hình gì?`,
+                    ans: `Hình bình hành`,
+                    w1: `Hình thang nhưng không phải hình bình hành`,
+                    w2: `Tứ giác có bốn đỉnh không đồng phẳng`,
+                    w3: `Hình chữ nhật có bốn cạnh bằng nhau`
+                },
+                {
+                    q: `(Bài 4.13 SGK trang 82) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình thang ($AB \\parallel CD$). Gọi $M$ là trung điểm của $SD$ (Hình 4.28) và $N$ là giao điểm của $SC$ với mặt phẳng $(MAB)$. Khẳng định nào sau đây là <b>đúng</b>?`,
+                    ans: `$MN$ là đường trung bình của tam giác $SCD$ (tức $N$ là trung điểm của $SC$ và $MN \\parallel CD$).`,
+                    w1: `$MN$ song song với $SD$.`,
+                    w2: `$N$ là điểm thuộc cạnh $SC$ sao cho $SN = 2NC$.`,
+                    w3: `Giao tuyến của $(MAB)$ và $(SCD)$ là đường thẳng $MC$.`
+                },
+                {
+                    q: `(Bài 4.14 SGK trang 83) Cho tứ diện $ABCD$. Gọi $M, N$ lần lượt là trung điểm của $BC, CD$ và $P$ là một điểm thuộc cạnh $AC$. Giao tuyến $d$ của hai mặt phẳng $(AMN)$ và $(BPD)$ có tính chất nào sau đây?`,
+                    ans: `Đường thẳng $d$ đi qua $P$ và song song với $MN, BD$.`,
+                    w1: `Đường thẳng $d$ đi qua $A$ và song song với $BC$.`,
+                    w2: `Đường thẳng $d$ đi qua $P$ và cắt $BD$ tại trung điểm của $BD$.`,
+                    w3: `Đường thẳng $d$ trùng với đường thẳng $MP$.`
+                }
+            ];
+            let item = bank[randInt(0, bank.length - 1)];
+            let opts = shuffle([{t: item.ans, v: true}, {t: item.w1, v: false}, {t: item.w2, v: false}, {t: item.w3, v: false}]);
+            let html = `<div class="question type1-q"><div><b>Câu ${questionCounter++}:</b> ${item.q}</div><ul class="options">`;
+            let labels = ['A', 'B', 'C', 'D'];
+            opts.forEach((opt, idx) => { html += `<li><label><input type="radio" name="q1_${questionCounter}" value="${opt.v}"> <b>${labels[idx]}.</b> ${opt.t}</label></li>`; });
+            return html + `</ul></div>`;
+        }
+
+        function genT1_UngDungVaHypebol() {
+            let bank = [
+                {
+                    q: `(Em có biết - SGK trang 83, Hình 4.32) Trong không gian, cố định một đường thẳng $\\Delta$ thẳng đứng và quay một đường thẳng $d$ quanh $\\Delta$. Nếu $d$ và $\\Delta$ <b>chéo nhau</b> thì trong hầu hết các trường hợp, hình tạo ra được gọi là:`,
+                    ans: `Mặt hypebol (hyperboloid).`,
+                    w1: `Mặt trụ tròn xoay.`,
+                    w2: `Mặt nón tròn xoay.`,
+                    w3: `Mặt cầu.`
+                },
+                {
+                    q: `(Bài 4.15 SGK trang 83 - Hình 4.29) Khi hai cánh cửa sổ hình chữ nhật được mở, dù ở vị trí nào thì hai mép ngoài của chúng luôn song song với nhau vì:`,
+                    ans: `Hai mép ngoài của hai cánh cửa cùng song song với hai đường thẳng chứa bản lề (mà hai đường bản lề song song với nhau).`,
+                    w1: `Hai cánh cửa sổ luôn nằm trên cùng một mặt phẳng khi mở ở mọi góc độ.`,
+                    w2: `Hai mép ngoài của cửa luôn cắt nhau tại một điểm ở vô cực.`,
+                    w3: `Hai mép ngoài của cửa luôn vuông góc với nhau.`
+                }
+            ];
+            let item = bank[randInt(0, bank.length - 1)];
+            let opts = shuffle([{t: item.ans, v: true}, {t: item.w1, v: false}, {t: item.w2, v: false}, {t: item.w3, v: false}]);
+            let html = `<div class="question type1-q"><div><b>Câu ${questionCounter++}:</b> ${item.q}</div><ul class="options">`;
+            let labels = ['A', 'B', 'C', 'D'];
+            opts.forEach((opt, idx) => { html += `<li><label><input type="radio" name="q1_${questionCounter}" value="${opt.v}"> <b>${labels[idx]}.</b> ${opt.t}</label></li>`; });
+            return html + `</ul></div>`;
+        }
+
+        // ================= SINH CÂU HỎI TRẮC NGHIỆM ĐÚNG/SAI (DẠNG 2) =================
+        function genT2_Bai49SGK() {
+            let html = `<div class="question type2-q"><div><b>Câu ${questionCounter++}:</b> (Bài 4.9 SGK trang 82) Trong không gian, cho ba đường thẳng phân biệt $a, b, c$. Xét tính đúng sai của các mệnh đề sau:</div>`;
+            html += `<div class="table-responsive"><table class="tf-table"><tbody>`;
+            let statements = [
+                { s: `Nếu $a$ và $b$ không cắt nhau thì $a$ và $b$ song song với nhau.`, v: "false" },
+                { s: `Nếu $b$ và $c$ chéo nhau thì $b$ và $c$ không cùng thuộc một mặt phẳng.`, v: "true" },
+                { s: `Nếu $a$ và $b$ phân biệt cùng song song với $c$ thì $a$ song song với $b$.`, v: "true" },
+                { s: `Nếu $a$ và $b$ cắt nhau, $b$ và $c$ cắt nhau thì $a$ và $c$ bắt buộc phải cắt nhau.`, v: "false" }
+            ];
+            let labels = ['a', 'b', 'c', 'd'];
+            statements.forEach((stmt, i) => {
+                html += `<tr data-ans="${stmt.v}"><td><b>${labels[i]})</b> ${stmt.s}</td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="true"> Đúng</label></td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="false"> Sai</label></td>
+                <td style="width: 140px;"><span class="feedback"></span></td></tr>`;
+            });
+            return html + `</tbody></table></div></div>`;
+        }
+
+        function genT2_ViDu3_Hinh422() {
+            let html = `<div class="question type2-q"><div><b>Câu ${questionCounter++}:</b> (Ví dụ 3 SGK trang 81 - Hình 4.22) Cho tứ diện $ABCD$. Gọi $M, N, P, Q, R, S$ lần lượt là trung điểm của các đoạn thẳng $AB, CD, AD, BC, AC, BD$. Xét tính đúng sai của các mệnh đề sau:</div>`;
+            html += `<div class="table-responsive"><table class="tf-table"><tbody>`;
+            let statements = [
+                { s: `Trong tam giác $ABC$, $MQ$ là đường trung bình nên $MQ \\parallel AC$ và $MQ = \\dfrac{1}{2}AC$.`, v: "true" },
+                { s: `Hai đường thẳng $MQ$ và $PN$ chéo nhau trong không gian.`, v: "false" },
+                { s: `Tứ giác $MPNQ$ là một hình bình hành.`, v: "true" },
+                { s: `Ba đoạn thẳng nối trung điểm các cặp cạnh đối diện là $MN, PQ, RS$ cùng đi qua trung điểm của mỗi đoạn.`, v: "true" }
+            ];
+            let labels = ['a', 'b', 'c', 'd'];
+            statements.forEach((stmt, i) => {
+                html += `<tr data-ans="${stmt.v}"><td><b>${labels[i]})</b> ${stmt.s}</td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="true"> Đúng</label></td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="false"> Sai</label></td>
+                <td style="width: 140px;"><span class="feedback"></span></td></tr>`;
+            });
+            return html + `</tbody></table></div></div>`;
+        }
+
+        function genT2_Bai413_Hinh428() {
+            let html = `<div class="question type2-q"><div><b>Câu ${questionCounter++}:</b> (Bài 4.13 SGK trang 82 - Hình 4.28) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình thang ($AB \\parallel CD$). Gọi $M$ là trung điểm của đoạn thẳng $SD$ và $N$ là giao điểm của đường thẳng $SC$ với mặt phẳng $(MAB)$. Xét tính đúng sai của các mệnh đề sau:</div>`;
+            html += `<div class="table-responsive"><table class="tf-table"><tbody>`;
+            let statements = [
+                { s: `Hai đường thẳng $AB$ và $SD$ cùng nằm trong một mặt phẳng.`, v: "false" },
+                { s: `Giao tuyến của hai mặt phẳng $(MAB)$ và $(SCD)$ là đường thẳng đi qua $M$ và song song với $AB, CD$.`, v: "true" },
+                { s: `Đoạn thẳng $MN$ là đường trung bình của tam giác $SCD$.`, v: "true" },
+                { s: `Tứ giác $ABNM$ là một hình thang có hai đáy là $AB$ và $MN$.`, v: "true" }
+            ];
+            let labels = ['a', 'b', 'c', 'd'];
+            statements.forEach((stmt, i) => {
+                html += `<tr data-ans="${stmt.v}"><td><b>${labels[i]})</b> ${stmt.s}</td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="true"> Đúng</label></td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="false"> Sai</label></td>
+                <td style="width: 140px;"><span class="feedback"></span></td></tr>`;
+            });
+            return html + `</tbody></table></div></div>`;
+        }
+
+        function genT2_ViDu1_LuyenTap3() {
+            let html = `<div class="question type2-q"><div><b>Câu ${questionCounter++}:</b> (Ví dụ 1 & Luyện tập 3 SGK trang 79, 81 - Hình 4.16) Cho hai hình bình hành $ABCD$ và $ABEF$ không cùng nằm trong một mặt phẳng. Xét tính đúng sai của các mệnh đề sau:</div>`;
+            html += `<div class="table-responsive"><table class="tf-table"><tbody>`;
+            let statements = [
+                { s: `Trong ba đường thẳng $AB, AF, BE$ không có hai đường thẳng nào chéo nhau vì chúng cùng nằm trong mặt phẳng $(ABEF)$.`, v: "true" },
+                { s: `Hai đường thẳng $BC$ và $EF$ song song với nhau.`, v: "false" },
+                { s: `Vì $CD \\parallel AB$ và $EF \\parallel AB$ nên $CD \\parallel EF$, suy ra bốn điểm $C, D, E, F$ đồng phẳng.`, v: "true" },
+                { s: `Tứ giác $CDFE$ là một hình bình hành.`, v: "true" }
+            ];
+            let labels = ['a', 'b', 'c', 'd'];
+            statements.forEach((stmt, i) => {
+                html += `<tr data-ans="${stmt.v}"><td><b>${labels[i]})</b> ${stmt.s}</td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="true"> Đúng</label></td>
+                <td style="width: 100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="false"> Sai</label></td>
+                <td style="width: 140px;"><span class="feedback"></span></td></tr>`;
+            });
+            return html + `</tbody></table></div></div>`;
+        }
+
+        // ================= SINH CÂU HỎI TRẢ LỜI NGẮN (DẠNG 3) =================
+        function genT3_ChuViMPNQ_ViDu3() {
+            let ac = randInt(4, 15) * 2;
+            let bd = randInt(4, 15) * 2;
+            let ans = ac + bd;
+            let html = `<div class="question type3-q">
+                <div><b>Câu ${questionCounter++}:</b> (Vận dụng Ví dụ 3 SGK - Hình 4.22) Cho tứ diện $ABCD$ có độ dài hai cạnh đối diện là $AC = ${ac}$ và $BD = ${bd}$. Gọi $M, N, P, Q$ lần lượt là trung điểm của các cạnh $AB, CD, AD, BC$. Tính <b>chu vi</b> của hình bình hành $MPNQ$.</div>
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    <label><b>Trả lời: </b></label>
+                    <input type="text" class="short-ans-input" data-ans="${ans}" placeholder="Nhập số...">
+                    <span class="feedback"></span>
+                </div>
+            </div>`;
+            return html;
+        }
+
+        function genT3_DoDaiMN_Bai413() {
+            let cd = randInt(5, 20) * 2;
+            let ab = randInt(2, cd / 2 - 1) * 2;
+            let ans = cd / 2;
+            let html = `<div class="question type3-q">
+                <div><b>Câu ${questionCounter++}:</b> (Vận dụng Bài 4.13 SGK - Hình 4.28) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình thang ($AB \\parallel CD$) với $AB = ${ab}$ và $CD = ${cd}$. Gọi $M$ là trung điểm của $SD$ và $N$ là giao điểm của đường thẳng $SC$ với mặt phẳng $(MAB)$. Tính độ dài đoạn thẳng $MN$.</div>
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    <label><b>Trả lời: </b></label>
+                    <input type="text" class="short-ans-input" data-ans="${ans}" placeholder="Nhập số...">
+                    <span class="feedback"></span>
+                </div>
+            </div>`;
+            return html;
+        }
+
+        function genT3_ChuViMNPQ_Bai411() {
+            let ab = randInt(3, 12) * 2;
+            let bc = randInt(3, 12) * 2;
+            let ans = ab + bc;
+            let html = `<div class="question type3-q">
+                <div><b>Câu ${questionCounter++}:</b> (Vận dụng Bài 4.11 SGK - Hình 4.27) Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình bình hành với $AB = ${ab}$ và $BC = ${bc}$. Gọi $M, N, P, Q$ lần lượt là trung điểm của các cạnh bên $SA, SB, SC, SD$. Tính <b>chu vi</b> của tứ giác $MNPQ$.</div>
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    <label><b>Trả lời: </b></label>
+                    <input type="text" class="short-ans-input" data-ans="${ans}" placeholder="Nhập số...">
+                    <span class="feedback"></span>
+                </div>
+            </div>`;
+            return html;
+        }
+
+        function genT3_DemCapCanhCheoNhau() {
+            let modeQ = randInt(0, 1);
+            if (modeQ === 0) {
+                let html = `<div class="question type3-q">
+                    <div><b>Câu ${questionCounter++}:</b> (Ví dụ 2 SGK - Hình 4.18) Trong một hình tứ diện $ABCD$ có tất cả $6$ cạnh ($AB, BC, CD, DA, AC, BD$). Hỏi có tất cả bao nhiêu <b>cặp cạnh chéo nhau</b> trong hình tứ diện đó?</div>
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                        <label><b>Trả lời: </b></label>
+                        <input type="text" class="short-ans-input" data-ans="3" placeholder="Nhập số...">
+                        <span class="feedback"></span>
+                    </div>
+                </div>`;
+                return html;
+            } else {
+                let n = randInt(4, 8);
+                let ans = n - 2;
+                let html = `<div class="question type3-q">
+                    <div><b>Câu ${questionCounter++}:</b> (Mở rộng Luyện tập 2 SGK - Hình 4.19) Cho hình chóp có đáy là một đa giác lồi gồm $${n}$ cạnh ($S.A_1A_2\\dots A_{${n}}$). Trong số tất cả các cạnh (cạnh bên và cạnh đáy) của hình chóp đó, có bao nhiêu cạnh <b>chéo</b> với cạnh bên $SA_1$?</div>
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                        <label><b>Trả lời: </b></label>
+                        <input type="text" class="short-ans-input" data-ans="${ans}" placeholder="Nhập số...">
+                        <span class="feedback"></span>
+                    </div>
+                </div>`;
+                return html;
+            }
+        }
+
+        // ================= ĐIỀU KHIỂN & CHẤM ĐIỂM =================
+        function generateTest() {
+            try {
+                let n1 = parseInt(document.getElementById('numType1').value);
+                let n2 = parseInt(document.getElementById('numType2').value);
+                let n3 = parseInt(document.getElementById('numType3').value);
+                let testContent = document.getElementById('test-content');
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                document.getElementById('score-display').innerHTML = '';
+                document.getElementById('advice-display').style.display = 'none';
+                questionCounter = 1; let finalHtml = ""; 
+ 
+                if (n1 > 0) {
+                    finalHtml += "<h3>Phần I: Câu trắc nghiệm nhiều phương án lựa chọn</h3>";
+                    let t1_funcs = shuffle([genT1_ViTriTuongDoi, genT1_ChopTuGiacVaTuDien, genT1_DinhLiBaGiaoTuyen, genT1_BaiTap411Den414, genT1_UngDungVaHypebol]);
+                    for (let i = 0; i < n1; i++) { finalHtml += t1_funcs[i % t1_funcs.length](); }
+                }
+                if (n2 > 0) {
+                    finalHtml += "<h3 style='margin-top:25px;'>Phần II: Câu trắc nghiệm đúng sai</h3>";
+                    let t2_funcs = shuffle([genT2_Bai49SGK, genT2_ViDu3_Hinh422, genT2_Bai413_Hinh428, genT2_ViDu1_LuyenTap3]);
+                    for (let i = 0; i < n2; i++) { finalHtml += t2_funcs[i % t2_funcs.length](); }
+                }
+                if (n3 > 0) {
+                    finalHtml += "<h3 style='margin-top:25px;'>Phần III: Câu trắc nghiệm trả lời ngắn</h3>";
+                    let t3_funcs = shuffle([genT3_ChuViMPNQ_ViDu3, genT3_DoDaiMN_Bai413, genT3_ChuViMNPQ_Bai411, genT3_DemCapCanhCheoNhau]);
+                    for (let i = 0; i < n3; i++) { finalHtml += t3_funcs[i % t3_funcs.length](); }
+                }
+ 
+                testContent.innerHTML = finalHtml; 
+                
+                if (window.MathJax && MathJax.typesetPromise) {
+                    MathJax.typesetClear([testContent]);
+                    MathJax.typesetPromise([testContent]).catch(function (err) { console.error(err.message); });
+                }
+                document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (error) {
+                console.error("Lỗi khi tạo đề:", error);
+                alert("Đã xảy ra lỗi kỹ thuật. Vui lòng nhấn Tạo Đề lại!");
+            }
+        }
+ 
+        function checkAnswers() {
+            let totalScore = 0; let maxScore = 0;
+            document.querySelectorAll('.type1-q').forEach(q => { maxScore++; let radios = q.querySelectorAll('input[type="radio"]'); let answered = false; radios.forEach(radio => { let li = radio.closest('li'); li.classList.remove('is-correct', 'is-incorrect'); li.style.border = "1px solid transparent"; if (radio.checked) { answered = true; if (radio.value === "true") { li.classList.add('is-correct'); totalScore++; } else { li.classList.add('is-incorrect'); } } if (radio.value === "true" && answered) li.style.border = "2px solid var(--correct-border)"; }); });
+            document.querySelectorAll('.type2-q tr[data-ans]').forEach(row => { maxScore++; let correctAns = row.getAttribute('data-ans'), radios = row.querySelectorAll('input[type="radio"]'), feedback = row.querySelector('.feedback'); row.classList.remove('is-correct', 'is-incorrect'); feedback.innerHTML = ""; let checkedVal = null; radios.forEach(r => { if (r.checked) checkedVal = r.value; }); if (checkedVal !== null) { if (checkedVal === correctAns) { row.classList.add('is-correct'); feedback.innerHTML = "✔ ĐÚNG"; feedback.className = "feedback text-correct"; totalScore++; } else { row.classList.add('is-incorrect'); feedback.innerHTML = `✘ SAI (Đ.Án: ${correctAns === "true" ? "Đúng" : "Sai"})`; feedback.className = "feedback text-incorrect"; } } });
+            document.querySelectorAll('.short-ans-input').forEach(input => { maxScore++; let correctAns = input.getAttribute('data-ans'), userAns = input.value.trim().replace(',', '.'), feedback = input.nextElementSibling; input.classList.remove('is-correct', 'is-incorrect'); if (userAns !== "") { if (Number(userAns) === Number(correctAns)) { input.classList.add('is-correct'); feedback.innerHTML = "✔ CHÍNH XÁC"; feedback.className = "feedback text-correct"; totalScore++; } else { input.classList.add('is-incorrect'); feedback.innerHTML = `✘ SAI (Đ.Án: ${correctAns})`; feedback.className = "feedback text-incorrect"; } } });
+            let percent = maxScore === 0 ? 0 : Math.round((totalScore/maxScore)*100);
+            let scoreDisplay = document.getElementById('score-display'); let adviceBox = document.getElementById('advice-display');
+            scoreDisplay.innerHTML = `Bạn đã đạt: ${totalScore} / ${maxScore} điểm (${percent}%)`; adviceBox.style.display = 'block';
+            if (percent < 50) { adviceBox.style.backgroundColor = '#f8d7da'; adviceBox.style.color = '#721c24'; adviceBox.innerHTML = "Kết quả chưa tốt. Hãy ôn tập lại kỹ 4 vị trí tương đối của hai đường thẳng, tính chất bắc cầu và định lí về ba đường giao tuyến nhé!"; } else if (percent < 80) { adviceBox.style.backgroundColor = '#fff3cd'; adviceBox.style.color = '#856404'; adviceBox.innerHTML = "Khá tốt! Hãy chú ý phân biệt rõ hai đường thẳng song song (đồng phẳng) và hai đường thẳng chéo nhau (không đồng phẳng)."; } else { adviceBox.style.backgroundColor = '#d4edda'; adviceBox.style.color = '#155724'; adviceBox.innerHTML = "Xuất sắc! Bạn đã làm chủ hoàn toàn kiến thức Bài 11: Hai đường thẳng song song!"; }
+            document.getElementById('score-display').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>
